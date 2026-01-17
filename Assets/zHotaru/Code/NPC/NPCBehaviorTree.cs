@@ -71,7 +71,18 @@ public class NPCBehaviorTree : MonoBehaviour
     public void SetExiting()
     {
         isInMuseum = false;
-        currentTarget = transform.position + Vector3.forward * 20f; // Di chuyển ra khỏi bảo tàng
+        // Di chuyển NPC ra khỏi bảo tàng thông qua cửa vào (Museum Entrance)
+        // Tính vị trí exit phía ngoài entrance
+        Vector3 exitDirection = (museumEntrance - transform.position).normalized;
+        currentTarget = museumEntrance + exitDirection * 20f; // Vị trí cách entrance 20 đơn vị phía ngoài
+    }
+    
+    public void DespawnNPC()
+    {
+        // Vô hiệu hóa NPC sau khi rời bảo tàng
+        gameObject.SetActive(false);
+        // Hoặc nếu muốn xóa hoàn toàn:
+        // Destroy(gameObject);
     }
     
     public bool ShouldTriggerQuestionEvent()

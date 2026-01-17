@@ -44,17 +44,19 @@ using UnityEngine;
  * 
  * 2.3. Cấu trúc cây (Copy cấu trúc này):
  * 
- *      ROOT (Parallel hoặc Sequence)
+ *      ROOT (Sequence)
  *      │
- *      ├─── SELECTOR "Exit Decision"
+ *      ├─── SELECTOR "Daily Check"
  *      │    ├─── CheckDayEnded
- *      │    ├─── CheckTimeToLeaveMuseum
  *      │    └─── Sequence "Museum Behavior"
  *      │         ├─── MoveToTarget (tới bảo tàng)
  *      │         ├─── SetEnteredMuseum
  *      │         │
  *      │         └─── REPEATER (hoặc Parallel)
  *      │              └─── SELECTOR "Inside Museum"
+ *      │                   ├─── CheckTimeToLeaveMuseum (rời bảo tàng nếu đủ thời gian)
+ *      │                   │    └─── NPCLeaveMuseum
+ *      │                   │
  *      │                   ├─── Sequence "Question Event"
  *      │                   │    ├─── CheckQuestionEvent
  *      │                   │    └─── NPCQuestionEvent
@@ -67,8 +69,6 @@ using UnityEngine;
  *      │                        ├─── SetTargetDisplay
  *      │                        ├─── MoveToTarget
  *      │                        └─── NPCWaitAtDisplay
- *      │
- *      └─── NPCLeaveMuseum
  * 
  * ## BƯỚC 3: Chi tiết từng Node
  * 
@@ -80,19 +80,22 @@ using UnityEngine;
  * 3.2. CheckTimeToLeaveMuseum
  *      - Task Type: Conditional
  *      - Script: CheckTimeToLeaveMuseum
- *      - Chức năng: Kiểm tra thời gian ở bảo tàng
+ *      - Chức năng: Kiểm tra thời gian ở bảo tàng (nếu đủ thời gian → Success)
+ *      - Lưu ý: PHẢI nằm TRONG REPEATER ở trong bảo tàng, chứ không phải ở ngoài!
  * 
  * 3.3. MoveToTarget (xuất hiện 2 lần)
  *      - Task Type: Action
- *      - Script: NPCMoveToTarget
+ *      - Script: NPCMoveToTargetNavMesh (hoặc NPCMoveToTarget)
  *      - Cài đặt:
- *        * Rotation Speed: 5
+ *        * Stopping Distance: 0.5 (NavMesh) hoặc 1 (Manual)
  *      - Chức năng: Di chuyển tới target (tới bảo tàng hoặc vị trí trưng bày)
+ *      - LƯU Ý: File có tên NPCMoveToTarget.cs nhưng class là NPCMoveToTargetNavMesh
  * 
  * 3.4. SetEnteredMuseum
  *      - Task Type: Action
  *      - Script: SetEnteredMuseum
  *      - Chức năng: Đánh dấu NPC đã vào bảo tàng (kích hoạt timer)
+ *      - Điều kiện thành công: Nếu khoảng cách < 2f thì Success
  * 
  * 3.5. SetTargetDisplay
  *      - Task Type: Action
@@ -110,7 +113,7 @@ using UnityEngine;
  * 3.7. CheckQuestionEvent
  *      - Task Type: Conditional
  *      - Script: CheckQuestionEvent
- *      - Chức năng: 30% chance để kích hoạt event câu hỏi
+ *      - Chức năng: 30% chance để kích hoạt event câu hỏi (mỗi frame)
  * 
  * 3.8. NPCQuestionEvent
  *      - Task Type: Action
@@ -126,7 +129,7 @@ using UnityEngine;
  * 3.9. CheckLittering
  *      - Task Type: Conditional
  *      - Script: CheckLittering
- *      - Chức năng: 15% chance để vứt rác
+ *      - Chức năng: 15% chance để vứt rác (mỗi frame)
  * 
  * 3.10. NPCLitteringBehavior
  *       - Task Type: Action
@@ -139,7 +142,11 @@ using UnityEngine;
  * 3.11. NPCLeaveMuseum
  *       - Task Type: Action
  *       - Script: NPCLeaveMuseum
- *       - Chức năng: NPC rời bảo tàng
+ *       - Cài đặt:
+ *         * Stopping Distance: 1
+ *         * Rotation Speed: 5
+ *       - Chức năng: NPC rời bảo tàng, di chuyển ra khỏi (100 đơn vị), sau đó despawn
+ *       - LƯU Ý: Phải là Sequence bên trong SELECTOR "Inside Museum", không phải ở ngoài!
  * 
  * ## BƯỚC 4: Cấu hình các Composite Node
  * 
@@ -193,7 +200,25 @@ using UnityEngine;
  * 
  * ## NHỮNG ĐIỀU CẦN LƯU Ý
  * 
- * ⚠️ Kiểm tra xác suất (30% câu hỏi, 15% rác) xảy ra mỗi frame
+ * ⚠️ CẤU TRÚC BEHAVIOR TREE ĐÚNG:
+ *    ROOT (Sequence)
+ *    └─ SELECTOR "Daily Check"
+ *       ├─ CheckDayEnded (nếu đúng → despawn)
+ *       └─ Sequence "Museum Behavior"
+ *          ├─ MoveToTarget (tới bảo tàng)
+ *          ├─ SetEnteredMuseum (đánh dấu đã vào)
+ *          └─ REPEATER
+ *             └─ SELECTOR "Inside Museum"
+ *                ├─ Sequence: CheckTimeToLeaveMuseum → NPCLeaveMuseum (RỜI và DESPAWN)
+ *                ├─ Sequence: CheckQuestionEvent → NPCQuestionEvent
+ *                ├─ Sequence: CheckLittering → NPCLitteringBehavior
+ *                └─ Sequence: SetTargetDisplay → MoveToTarget → NPCWaitAtDisplay
+ *
+ * ⚠️ LỖICHIARA CỦA BẢN CŨ: 
+ *    - Nếu NPCLeaveMuseum ở NGOÀI, NPC sẽ rời bảo tàng ngay lập tức
+ *    - Cần phải ở BÊN TRONG REPEATER với priority cao (đầu Selector)
+ * 
+ * ⚠️ Xác suất (30% câu hỏi, 15% rác) xảy ra mỗi frame
  *    Nên thêm cooldown nếu không muốn sự kiện xảy ra quá thường xuyên
  * 
  * ⚠️ UIManager cần các component UI:
@@ -206,6 +231,9 @@ using UnityEngine;
  * ⚠️ Museum Entrance phải nằm trong phạm vi map và accessible
  * 
  * ⚠️ Nếu sử dụng Rigidbody, hãy dùng Kinematic mode để kiểm soát vị trí
+ * 
+ * ⚠️ NPCLeaveMuseum sẽ gọi DespawnNPC() khi NPC rời khỏi bảo tàng
+ *    SetActive(false) làm NPC ẩn đi, hoặc có thể thay bằng Destroy()
  */
 
 public class BehaviorTreeDetailedGuide : MonoBehaviour

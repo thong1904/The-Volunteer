@@ -1,81 +1,90 @@
 using UnityEngine;
+using UnityEngine.AI;
 using BehaviorDesigner.Runtime;
 using BehaviorDesigner.Runtime.Tasks;
 
 [TaskCategory("NPC")]
 [TaskName("Leave Museum")]
-[TaskDescription("NPC rời bỏ bảo tàng")]
+[TaskDescription("NPC rời bỏ bảo tàng sử dụng NavMesh")]
 public class NPCLeaveMuseum : Action
 {
     private NPCBehaviorTree npcBehavior;
-    private Vector3 exitPosition;
+    private NavMeshAgent navMeshAgent;
+    private Vector3 targetPosition;
     
-    [SerializeField] private float stoppingDistance = 1f;
-    [SerializeField] private float rotationSpeed = 5f;
+    [SerializeField] private float stoppingDistance = 0.5f;
     
     public override void OnAwake()
     {
         npcBehavior = GetComponent<NPCBehaviorTree>();
+        navMeshAgent = GetComponent<NavMeshAgent>();
+        
+        if (navMeshAgent == null)
+        {
+            Debug.LogError($"{gameObject.name} không có NavMeshAgent! Thêm Component NavMeshAgent.");
+        }
     }
     
     public override void OnStart()
     {
-        // Thiết lập vị trí thoát ra khỏi bảo tàng (xa ra phía trước)
-        exitPosition = transform.position + transform.forward * 50f;
         npcBehavior.SetExiting();
+        
+        // Kích hoạt NavMeshAgent
+        if (navMeshAgent != null)
+        {
+            navMeshAgent.enabled = true;
+        }
         
         Debug.Log($"{npcBehavior.NPCName} đang rời bảo tàng");
     }
     
     public override TaskStatus OnUpdate()
     {
-        Vector3 targetPosition = npcBehavior.CurrentTarget;
+        if (npcBehavior == null || navMeshAgent == null)
+            return TaskStatus.Failure;
         
-        // Tính khoảng cách tới mục tiêu
-        float distance = Vector3.Distance(transform.position, targetPosition);
-        
-        // Nếu đã rời xa bảo tàng
-        if (distance < stoppingDistance || transform.position.z > exitPosition.z)
+        if (!navMeshAgent.isOnNavMesh)
         {
-            Rigidbody rb = transform.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                rb.linearVelocity = Vector3.zero;
-            }
+            Debug.LogWarning($"{gameObject.name} không nằm trên NavMesh!");
+            return TaskStatus.Failure;
+        }
+        
+        targetPosition = npcBehavior.CurrentTarget;
+        
+        // Đặt đích cho NavMeshAgent
+        if (navMeshAgent.isActiveAndEnabled)
+        {
+            navMeshAgent.SetDestination(targetPosition);
+        }
+        
+        // Kiểm tra xem đã đến đích hay chưa
+        if (!navMeshAgent.pathPending)
+        {
+            float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
             
-            Debug.Log($"{npcBehavior.NPCName} đã rời bảo tàng");
-            return TaskStatus.Success;
+            // Nếu đã đến đích
+            if (distanceToTarget < stoppingDistance)
+            {
+                navMeshAgent.velocity = Vector3.zero;
+                navMeshAgent.ResetPath();
+                
+                Debug.Log($"{npcBehavior.NPCName} đã rời bảo tàng và despawn");
+                npcBehavior.DespawnNPC();
+                return TaskStatus.Success;
+            }
         }
         
-        // Hướng tới mục tiêu
-        Vector3 direction = (targetPosition - transform.position).normalized;
-        
-        // Xoay hướng NPC
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-        
-        // Di chuyển NPC
-        Vector3 movement = direction * npcBehavior.MovementSpeed;
-        
-        Rigidbody rb2 = transform.GetComponent<Rigidbody>();
-        if (rb2 != null)
-        {
-            rb2.linearVelocity = new Vector3(movement.x, rb2.linearVelocity.y, movement.z);
-        }
-        else
-        {
-            transform.Translate(movement * Time.deltaTime, Space.World);
-        }
-        
+        // Còn đang di chuyển
         return TaskStatus.Running;
     }
     
     public override void OnEnd()
     {
-        Rigidbody rb = transform.GetComponent<Rigidbody>();
-        if (rb != null)
+        // Dừng di chuyển
+        if (navMeshAgent != null && navMeshAgent.isActiveAndEnabled)
         {
-            rb.linearVelocity = Vector3.zero;
+            navMeshAgent.velocity = Vector3.zero;
+            navMeshAgent.ResetPath();
         }
     }
 }
