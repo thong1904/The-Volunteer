@@ -116,6 +116,14 @@ public class DayNightManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Kiểm tra xem đã vào buổi tối hay ngày đã kết thúc
+    /// </summary>
+    public bool IsNighttime()
+    {
+        return currentHour >= endHour || !isRunning;
+    }
+
+    /// <summary>
     /// Bắt đầu ngày mới
     /// </summary>
     public void StartNewDay()
