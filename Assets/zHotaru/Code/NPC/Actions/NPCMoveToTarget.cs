@@ -13,6 +13,7 @@ public class NPCMoveToTargetNavMesh : Action
     private Vector3 targetPosition;
     
     [SerializeField] private float stoppingDistance = 0.5f;
+    [SerializeField] private string walkAnimationName = "Walk";
     
     public override void OnAwake()
     {
@@ -23,6 +24,11 @@ public class NPCMoveToTargetNavMesh : Action
         {
             Debug.LogError($"{gameObject.name} không có NavMeshAgent! Thêm Component NavMeshAgent.");
         }
+        else
+        {
+            // Tối ưu NavMeshAgent để NPC có thể xuyên qua nhau khi cần
+            navMeshAgent.avoidancePriority = Random.Range(0, 32); // Ưu tiên ngẫu nhiên để tránh deadlock
+        }
     }
     
     public override void OnStart()
@@ -32,6 +38,9 @@ public class NPCMoveToTargetNavMesh : Action
         {
             navMeshAgent.enabled = true;
         }
+        
+        // Phát animation walk
+        npcBehavior.PlayAnimation(walkAnimationName);
     }
     
     public override TaskStatus OnUpdate()

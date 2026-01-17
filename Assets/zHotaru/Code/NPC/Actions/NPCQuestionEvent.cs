@@ -9,6 +9,8 @@ public class NPCQuestionEvent : Action
 {
     private NPCBehaviorTree npcBehavior;
     
+    [SerializeField] private string waveAnimationName = "Wave";
+    
     [System.Serializable]
     public class Question
     {
@@ -45,6 +47,9 @@ public class NPCQuestionEvent : Action
         {
             rb.linearVelocity = Vector3.zero;
         }
+        
+        // Phát animation wave
+        npcBehavior.PlayAnimation(waveAnimationName);
         
         Debug.Log($"[{npcBehavior.NPCName}] {currentQuestion.questionText}");
         

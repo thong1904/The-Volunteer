@@ -13,6 +13,7 @@ public class NPCLeaveMuseum : Action
     private Vector3 targetPosition;
     
     [SerializeField] private float stoppingDistance = 0.5f;
+    [SerializeField] private string walkAnimationName = "Walk";
     
     public override void OnAwake()
     {
@@ -22,6 +23,11 @@ public class NPCLeaveMuseum : Action
         if (navMeshAgent == null)
         {
             Debug.LogError($"{gameObject.name} không có NavMeshAgent! Thêm Component NavMeshAgent.");
+        }
+        else
+        {
+            // Tối ưu NavMeshAgent để NPC có thể xuyên qua nhau khi cần
+            navMeshAgent.avoidancePriority = Random.Range(0, 32);
         }
     }
     
@@ -34,6 +40,9 @@ public class NPCLeaveMuseum : Action
         {
             navMeshAgent.enabled = true;
         }
+        
+        // Phát animation walk
+        npcBehavior.PlayAnimation(walkAnimationName);
         
         Debug.Log($"{npcBehavior.NPCName} đang rời bảo tàng");
     }

@@ -10,9 +10,12 @@ public class NPCWaitAtDisplay : Action
     private NPCBehaviorTree npcBehavior;
     private float waitTime;
     private float startTime;
+    private DisplayArea displayArea;
     
     [SerializeField] private float minWaitTime = 3f;
     [SerializeField] private float maxWaitTime = 8f;
+    [SerializeField] private string idleAnimationName = "Idle";
+    [SerializeField] private float rotationSpeed = 5f; // Tốc độ xoay để nhìn vào vị trí trưng bày
     
     public override void OnAwake()
     {
@@ -32,11 +35,36 @@ public class NPCWaitAtDisplay : Action
             rb.linearVelocity = Vector3.zero;
         }
         
+        // Phát animation idle
+        npcBehavior.PlayAnimation(idleAnimationName);
+        
+        // Tìm DisplayArea gần nhất để lấy focus point
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 5f);
+        foreach (Collider collider in colliders)
+        {
+            displayArea = collider.GetComponent<DisplayArea>();
+            if (displayArea != null)
+                break;
+        }
+        
         Debug.Log($"{npcBehavior.NPCName} đang xem trưng bày trong {waitTime:F2} giây");
     }
     
     public override TaskStatus OnUpdate()
     {
+        // Xoay NPC để nhìn vào focus point của display area
+        if (displayArea != null)
+        {
+            Vector3 focusPoint = displayArea.GetFocusPoint();
+            Vector3 directionToFocus = (focusPoint - transform.position).normalized;
+            
+            // Tính toán quaternion hướng
+            Quaternion targetRotation = Quaternion.LookRotation(directionToFocus);
+            
+            // Xoay NPC mượt mà
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
+        
         // Kiểm tra thời gian chờ
         if (Time.time - startTime >= waitTime)
         {
