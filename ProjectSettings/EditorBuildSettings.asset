@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Hoc.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Tuan.unity
+    guid: cb81f925ebb2f2e40ba77e64b5473446
+  - enabled: 1
+    path: Assets/Scenes/LoadingScene.unity
+    guid: a14d0311ae07d3b4da227535d0f4b7e9
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
