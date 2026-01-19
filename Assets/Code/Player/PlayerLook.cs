@@ -16,8 +16,8 @@ public class PlayerLook : MonoBehaviour
 
     void Update()
     {
-        float mouseX = lookInput.x * sensitivity * 100 * Time.deltaTime;
-        float mouseY = lookInput.y * sensitivity * 100 * Time.deltaTime;
+        float mouseX = lookInput.x * sensitivity * 80 * Time.deltaTime;
+        float mouseY = lookInput.y * sensitivity * 80 * Time.deltaTime;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -80f, 80f);
