@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b1e92f967b2eb13449767b2368d6508b
+timeCreated: 1488360771
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 84435
+  packageName: Bush-Craft Extension Pack
+  packageVersion: 00
+  assetPath: Assets/ArtisticMechanics/Bush-Craft Extension Pack/Prefabs/Illustrated/Arrow
+    - straightpoint_i.prefab
+  uploadId: 167118
