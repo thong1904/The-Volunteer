@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 33529e67e30f85b47a9f2458eb8d03c6
+timeCreated: 1488360450
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 84435
+  packageName: Bush-Craft Extension Pack
+  packageVersion: 00
+  assetPath: Assets/ArtisticMechanics/Bush-Craft Extension Pack/Prefabs/Stealth/Arrow
+    - flatpoint_s.prefab
+  uploadId: 167118
