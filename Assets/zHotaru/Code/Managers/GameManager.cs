@@ -1,21 +1,37 @@
 using UnityEngine;
+using System;
 
+/// <summary>
+/// Core Manager - Quản lý toàn bộ game flow, tích hợp các Manager con
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
     
-    [Header("Time Settings")]
-    [SerializeField] private float dayDuration = 300f; // 5 phút = 1 ngày (có thể thay đổi)
+    [Header("Sub-Managers")]
+    [SerializeField] private NPCManager npcManager;
+    [SerializeField] private UpgradeManager upgradeManager;
+    [SerializeField] private SaveLoadManager saveLoadManager;
     
     [Header("Game State")]
-    [SerializeField] private int playerScore = 0;
+    private bool isGameRunning = false;
+    private bool isPaused = false;
     
-    private float dayStartTime;
-    private bool isDayEnded = false;
+    // Properties để truy cập Sub-Managers
+    public NPCManager NPCs => npcManager;
+    public UpgradeManager Upgrades => upgradeManager;
+    public SaveLoadManager SaveLoad => saveLoadManager;
     
-    public bool IsDayEnded => isDayEnded;
-    public int PlayerScore => playerScore;
-    public float RemainingDayTime => Mathf.Max(0, dayDuration - (Time.time - dayStartTime));
+    // Properties cho các Manager độc lập
+    public ScoreManager Score => ScoreManager.Instance;
+    public DayNightManager DayNight => DayNightManager.Instance;
+    public UIManager UI => UIManager.Instance;
+    
+    // Events
+    public event Action OnGameStart;
+    public event Action OnGamePause;
+    public event Action OnGameResume;
+    public event Action OnDayEnd;
     
     void Awake()
     {
@@ -27,39 +43,108 @@ public class GameManager : MonoBehaviour
         
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        
+        InitializeManagers();
     }
     
     void Start()
     {
-        dayStartTime = Time.time;
+        StartNewDay();
     }
     
     void Update()
     {
-        // Kiểm tra xem ngày đã kết thúc chưa
-        if (!isDayEnded && Time.time - dayStartTime >= dayDuration)
+        if (!isGameRunning || isPaused) return;
+        
+        // Kiểm tra điều kiện kết thúc ngày
+        if (DayNight != null && DayNight.IsNighttime())
         {
-            isDayEnded = true;
-            OnDayEnded();
+            EndDay();
         }
     }
     
-    public void AddScore(int points)
+    private void InitializeManagers()
     {
-        playerScore += points;
-        Debug.Log($"Cộng {points} điểm! Tổng điểm: {playerScore}");
+        // Tự động tìm hoặc tạo Sub-Managers nếu chưa có
+        if (npcManager == null)
+            npcManager = GetComponentInChildren<NPCManager>();
+        
+        if (upgradeManager == null)
+            upgradeManager = GetComponentInChildren<UpgradeManager>();
+            
+        if (saveLoadManager == null)
+            saveLoadManager = GetComponentInChildren<SaveLoadManager>();
     }
     
-    public void ResetDay()
+    public void StartNewDay()
     {
-        dayStartTime = Time.time;
-        isDayEnded = false;
-        playerScore = 0;
+        isGameRunning = true;
+        isPaused = false;
+        
+        // Reset các hệ thống
+        if (Score != null) Score.ResetScore();
+        if (DayNight != null) DayNight.StartNewDay();
+        if (npcManager != null) npcManager.StartCustomerSpawning();
+        
+        OnGameStart?.Invoke();
+        Debug.Log("🌅 Ngày mới bắt đầu!");
     }
     
-    private void OnDayEnded()
+    public void EndDay()
     {
-        Debug.Log("Ngày đã kết thúc! Tổng điểm: " + playerScore);
-        // TODO: Hiển thị màn hình kết thúc ngày
+        if (!isGameRunning) return;
+        
+        isGameRunning = false;
+        
+        // Dừng spawn NPC
+        if (npcManager != null) npcManager.StopCustomerSpawning();
+        
+        OnDayEnd?.Invoke();
+        
+        // Auto save khi kết thúc ngày
+        AutoSave();
+        
+        Debug.Log($"🌙 Ngày kết thúc! Tổng điểm: {Score?.GetTotalScore() ?? 0}");
+    }
+    
+    public void PauseGame()
+    {
+        isPaused = true;
+        Time.timeScale = 0f;
+        OnGamePause?.Invoke();
+    }
+    
+    public void ResumeGame()
+    {
+        isPaused = false;
+        Time.timeScale = 1f;
+        OnGameResume?.Invoke();
+    }
+    
+    public void SaveGame()
+    {
+        if (saveLoadManager != null)
+        {
+            saveLoadManager.SaveGame();
+            Debug.Log("💾 Game saved!");
+        }
+    }
+    
+    public void LoadGame()
+    {
+        if (saveLoadManager != null)
+        {
+            saveLoadManager.LoadGame();
+            Debug.Log("📂 Game loaded!");
+        }
+    }
+    
+    private void AutoSave()
+    {
+        if (saveLoadManager != null && saveLoadManager.IsAutoSaveEnabled)
+        {
+            saveLoadManager.SaveGame();
+            Debug.Log("💾 Auto-saved!");
+        }
     }
 }

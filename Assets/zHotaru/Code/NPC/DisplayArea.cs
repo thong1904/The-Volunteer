@@ -2,31 +2,43 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// Script cho các vị trí trưng bày - NPC chọn vị trí ngẫu nhiên trong ring (annulus)
+/// Script cho các vị trí trưng bày - NPC chọn vị trí ngẫu nhiên xung quanh object
 /// </summary>
 public class DisplayArea : MonoBehaviour
 {
     [Header("Display Area Settings")]
-    [SerializeField] private float innerRadius = 1f; // Bán kính vùng tránh (center)
-    [SerializeField] private float outerRadius = 3f; // Bán kính vùng ngoài
+    [SerializeField] private float areaRadius = 3f; // Bán kính vùng NPC có thể đứng
     [SerializeField] private float navMeshSampleDistance = 5f; // Khoảng cách sample trên NavMesh
-    [SerializeField] private Transform focusPoint; // Điểm để NPC nhìn vào
+    [SerializeField] private Transform focusPoint; // Điểm để NPC nhìn vào (nếu null sẽ dùng center)
+    [SerializeField] private bool useColliderBounds = true; // Tự động dùng bounds của collider
     
     private Vector3 centerPosition;
+    private Collider objectCollider;
     
     void OnEnable()
     {
         centerPosition = transform.position;
+        objectCollider = GetComponent<Collider>();
     }
     
     /// <summary>
-    /// Lấy vị trí ngẫu nhiên trong vùng ring (annulus) giữa innerRadius và outerRadius
+    /// Lấy vị trí ngẫu nhiên xung quanh object
     /// </summary>
     public Vector3 GetRandomPosition()
     {
-        // Chọn vị trí ngẫu nhiên trong ring (vòng tròn)
+        float radius = areaRadius;
+        
+        // Nếu bật useColliderBounds và có collider, dùng bounds để tính radius
+        if (useColliderBounds && objectCollider != null)
+        {
+            // Lấy kích thước lớn nhất của collider + thêm một chút buffer
+            Vector3 size = objectCollider.bounds.size;
+            radius = Mathf.Max(size.x, size.z) * 0.5f + 1f; // Thêm 1m buffer
+        }
+        
+        // Chọn vị trí ngẫu nhiên trong vòng tròn
         float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-        float randomRadius = Random.Range(innerRadius, outerRadius);
+        float randomRadius = Random.Range(0f, radius);
         
         Vector3 randomPosition = centerPosition + new Vector3(
             Mathf.Cos(randomAngle) * randomRadius,
@@ -73,16 +85,35 @@ public class DisplayArea : MonoBehaviour
 #if UNITY_EDITOR
     void OnDrawGizmosSelected()
     {
-        // Vẽ 2 vòng tròn trong editor để visualize inner và outer radius
         Vector3 pos = transform.position;
+        float radius = areaRadius;
         
-        // Vòng tròn inner (vùng tránh) - màu đỏ
-        Gizmos.color = Color.red;
-        DrawCircle(pos, innerRadius, 32);
+        // Nếu dùng collider bounds, vẽ theo bounds
+        if (useColliderBounds)
+        {
+            Collider col = GetComponent<Collider>();
+            if (col != null)
+            {
+                Vector3 size = col.bounds.size;
+                radius = Mathf.Max(size.x, size.z) * 0.5f + 1f;
+                
+                // Vẽ bounds của collider
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
+            }
+        }
         
-        // Vòng tròn outer (vùng ngoài) - màu xanh
+        // Vẽ vòng tròn vùng NPC có thể đứng - màu xanh
         Gizmos.color = Color.green;
-        DrawCircle(pos, outerRadius, 32);
+        DrawCircle(pos, radius, 32);
+        
+        // Vẽ focus point
+        if (focusPoint != null)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(focusPoint.position, 0.2f);
+            Gizmos.DrawLine(pos, focusPoint.position);
+        }
     }
     
     private void DrawCircle(Vector3 center, float radius, int segments)

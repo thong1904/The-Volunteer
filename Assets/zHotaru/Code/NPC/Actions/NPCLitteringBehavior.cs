@@ -81,18 +81,5 @@ public class NPCLitteringBehavior : Action
         
         // Tạo rác tại vị trí spawn
         GameObject trash = Object.Instantiate(randomTrashPrefab, spawnPosition, Quaternion.identity);
-        
-        // Phát animation vứt rác
-        PlayLitteringAnimation();
-    }
-    
-    private void PlayLitteringAnimation()
-    {
-        // TODO: Thêm animation vứt rác
-        Animator animator = transform.GetComponent<Animator>();
-        if (animator != null)
-        {
-            animator.SetTrigger("Littering");
-        }
     }
 }

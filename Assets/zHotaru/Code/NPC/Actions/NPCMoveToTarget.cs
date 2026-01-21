@@ -50,8 +50,16 @@ public class NPCMoveToTargetNavMesh : Action
         
         if (!navMeshAgent.isOnNavMesh)
         {
-            Debug.LogWarning($"{gameObject.name} không nằm trên NavMesh!");
-            return TaskStatus.Failure;
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(transform.position, out hit, 3f, NavMesh.AllAreas))
+            {
+                navMeshAgent.Warp(hit.position);
+            }
+            else
+            {
+                Debug.LogWarning($"{gameObject.name} không nằm trên NavMesh!");
+                return TaskStatus.Failure;
+            }
         }
         
         targetPosition = npcBehavior.CurrentTarget;

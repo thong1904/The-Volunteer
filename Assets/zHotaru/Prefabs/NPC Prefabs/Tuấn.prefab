@@ -61,7 +61,7 @@ Transform:
   m_GameObject: {fileID: 3777957292288362290}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -9.77}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -204,6 +204,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   npcName: "Tu\u1EA5n"
   npcID: 0
+  museumEntranceTransform: {fileID: 0}
+  displayTransforms: []
   museumEntrance: {x: 0, y: 0, z: 0}
   displayPositions:
   - {x: 12.5, y: 0, z: 16.12}

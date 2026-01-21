@@ -68,25 +68,14 @@ public class NPCBehaviorTree : MonoBehaviour
     
     public void SetTargetDisplayPosition()
     {
-        // Ưu tiên dùng Transform nếu có
-        if (displayTransforms.Length > 0)
+        if (displayTransforms != null && displayTransforms.Length > 0)
         {
             Transform randomDisplay = displayTransforms[Random.Range(0, displayTransforms.Length)];
-            
-            // Nếu là DisplayArea, lấy vị trí ngẫu nhiên trong vùng
-            DisplayArea displayArea = randomDisplay.GetComponent<DisplayArea>();
-            if (displayArea != null)
-            {
-                currentTarget = displayArea.GetRandomPosition();
-            }
-            else
-            {
-                currentTarget = randomDisplay.position;
-            }
+            var displayArea = randomDisplay.GetComponent<DisplayArea>();
+            currentTarget = displayArea != null ? displayArea.GetRandomPosition() : randomDisplay.position;
         }
-        else if (displayPositions.Length > 0)
+        else if (displayPositions != null && displayPositions.Length > 0)
         {
-            // Fallback to Vector3 system
             currentTarget = displayPositions[Random.Range(0, displayPositions.Length)];
         }
     }
@@ -113,10 +102,16 @@ public class NPCBehaviorTree : MonoBehaviour
     
     public void DespawnNPC()
     {
-        // Vô hiệu hóa NPC sau khi rời bảo tàng
-        gameObject.SetActive(false);
-        // Hoặc nếu muốn xóa hoàn toàn:
-        // Destroy(gameObject);
+        // Gọi NPCManager thay vì tự SetActive
+        if (GameManager.Instance != null && GameManager.Instance.NPCs != null)
+        {
+            GameManager.Instance.NPCs.DespawnNPC(gameObject);
+        }
+        else
+        {
+            // Fallback
+            gameObject.SetActive(false);
+        }
     }
     
     public bool ShouldTriggerQuestionEvent()
@@ -144,6 +139,43 @@ public class NPCBehaviorTree : MonoBehaviour
         if (animator != null && !string.IsNullOrEmpty(animationName))
         {
             animator.SetTrigger(animationName);
+        }
+    }
+
+    // Inject displays from NPCManager (scene-level)
+    public void SetDisplays(Transform[] displays)
+    {
+        if (displays != null && displays.Length > 0)
+            displayTransforms = displays;
+    }
+
+    // Inject entrance point from NPCManager
+    public void SetEntrancePoint(Transform entrance)
+    {
+        museumEntranceTransform = entrance;
+        if (entrance != null)
+            museumEntrance = entrance.position;
+    }
+
+    // Reset all runtime state on (re)spawn
+    public void ResetState()
+    {
+        isInMuseum = false;
+        isDayEnded = false;
+        museumExitTime = Random.Range(minMuseumTime, maxMuseumTime);
+
+        // Reset target back to entrance so NPC walks in
+        currentTarget = museumEntranceTransform != null
+            ? museumEntranceTransform.position
+            : museumEntrance;
+
+        // Restart Behavior Designer tree cleanly
+        if (behaviorTree == null)
+            behaviorTree = GetComponent<BehaviorTree>();
+        if (behaviorTree != null)
+        {
+            behaviorTree.DisableBehavior();
+            behaviorTree.EnableBehavior();
         }
     }
 }
