@@ -12,6 +12,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private NPCManager npcManager;
     [SerializeField] private UpgradeManager upgradeManager;
     [SerializeField] private SaveLoadManager saveLoadManager;
+    [SerializeField] private UIManager uiManager;
+    [SerializeField] private ScoreManager scoreManager;
+    [SerializeField] private DayNightManager dayNightManager;
     
     [Header("Game State")]
     private bool isGameRunning = false;
@@ -21,11 +24,9 @@ public class GameManager : MonoBehaviour
     public NPCManager NPCs => npcManager;
     public UpgradeManager Upgrades => upgradeManager;
     public SaveLoadManager SaveLoad => saveLoadManager;
-    
-    // Properties cho các Manager độc lập
-    public ScoreManager Score => ScoreManager.Instance;
-    public DayNightManager DayNight => DayNightManager.Instance;
-    public UIManager UI => UIManager.Instance;
+    public UIManager UI => uiManager;
+    public ScoreManager Score => scoreManager;
+    public DayNightManager DayNight => dayNightManager;
     
     // Events
     public event Action OnGameStart;
@@ -65,7 +66,7 @@ public class GameManager : MonoBehaviour
     
     private void InitializeManagers()
     {
-        // Tự động tìm hoặc tạo Sub-Managers nếu chưa có
+        // Tự động tìm Sub-Managers trong children nếu chưa gán
         if (npcManager == null)
             npcManager = GetComponentInChildren<NPCManager>();
         
@@ -74,6 +75,19 @@ public class GameManager : MonoBehaviour
             
         if (saveLoadManager == null)
             saveLoadManager = GetComponentInChildren<SaveLoadManager>();
+        
+        if (uiManager == null)
+            uiManager = GetComponentInChildren<UIManager>();
+        
+        if (scoreManager == null)
+            scoreManager = GetComponentInChildren<ScoreManager>();
+        
+        if (dayNightManager == null)
+            dayNightManager = GetComponentInChildren<DayNightManager>();
+        
+        // Initialize UIManager nếu có
+        if (uiManager != null)
+            uiManager.Initialize();
     }
     
     public void StartNewDay()

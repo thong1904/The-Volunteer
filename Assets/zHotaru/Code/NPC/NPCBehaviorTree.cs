@@ -23,8 +23,12 @@ public class NPCBehaviorTree : MonoBehaviour
     [SerializeField] private float maxMuseumTime = 120f;
     
     [Header("Probability")]
-    [SerializeField] [Range(0, 100)] private float questionEventChance = 30f; // % xác suất event câu hỏi
     [SerializeField] [Range(0, 100)] private float litterChance = 15f; // % xác suất vứt rác
+    
+    [Header("Question Event Settings")]
+    [SerializeField] private float questionTriggerRadius = 5f; // Bán kính kích hoạt câu hỏi (theo NPC)
+    [SerializeField, Range(0f, 100f)] private float questionChancePercent = 50f; // Xác suất bổ sung cho CheckQuestionEvent
+    [SerializeField] private bool showQuestionRadiusGizmo = true; // Hiển thị Gizmo bán kính câu hỏi
     
     [Header("References")]
     [SerializeField] private BehaviorTree behaviorTree;
@@ -32,14 +36,19 @@ public class NPCBehaviorTree : MonoBehaviour
     private Vector3 currentTarget;
     private bool isInMuseum = false;
     private bool isDayEnded = false;
+    private bool isAtDisplay = false;
     private float museumExitTime;
     private Animator animator;
     
     public string NPCName => npcName;
+    public bool IsAtDisplay { get => isAtDisplay; set => isAtDisplay = value; }
     public int NPCID => npcID;
     public Vector3 CurrentTarget => currentTarget;
     public bool IsInMuseum => isInMuseum;
     public float MovementSpeed => movementSpeed;
+    public float QuestionTriggerRadius => questionTriggerRadius;
+    public float QuestionChancePercent => questionChancePercent;
+    public bool ShowQuestionRadiusGizmo => showQuestionRadiusGizmo;
     
     void Start()
     {
@@ -114,10 +123,7 @@ public class NPCBehaviorTree : MonoBehaviour
         }
     }
     
-    public bool ShouldTriggerQuestionEvent()
-    {
-        return Random.Range(0f, 100f) < questionEventChance;
-    }
+    // Đã hợp nhất xác suất hỏi thành QuestionChancePercent để tránh chồng xác suất
     
     public bool ShouldLitter()
     {
@@ -177,5 +183,12 @@ public class NPCBehaviorTree : MonoBehaviour
             behaviorTree.DisableBehavior();
             behaviorTree.EnableBehavior();
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (!showQuestionRadiusGizmo) return;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, questionTriggerRadius);
     }
 }

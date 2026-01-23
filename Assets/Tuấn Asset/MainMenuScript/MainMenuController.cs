@@ -43,7 +43,7 @@ public class MainMenuController : MonoBehaviour
         if (isTransitioning) return;
         isTransitioning = true;
 
-        StartCoroutine(FadeOutAndLoad("LoadingScene"));
+        StartCoroutine(FadeOutAndLoad("Hotaru Test"));
     }
 
     public void OnQuitPressed()

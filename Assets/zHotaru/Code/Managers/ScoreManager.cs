@@ -1,26 +1,23 @@
 using UnityEngine;
 using System;
 
+/// <summary>
+/// Quản lý điểm số. Là con của GameManager.
+/// Truy cập qua: GameManager.Instance.Score
+/// </summary>
 public class ScoreManager : MonoBehaviour
 {
+    // Giữ static để backward compatible
     public static ScoreManager Instance { get; private set; }
 
     private int totalScore = 0;
 
-    // Event khi điểm thay đổi - để sau này kết nối UI hiển thị
-    // TODO: Tạo UI script để subscribe vào event này và cập nhật hiển thị
+    // Event khi điểm thay đổi
     public event Action<int> OnScoreChanged;
 
-    private void Awake()
+    void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        Instance = this;
     }
 
     /// <summary>

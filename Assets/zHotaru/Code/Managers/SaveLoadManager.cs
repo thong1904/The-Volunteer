@@ -24,17 +24,22 @@ public class SaveLoadManager : MonoBehaviour
     
     public void SaveGame()
     {
+        var gm = GameManager.Instance;
+        if (gm == null)
+        {
+            Debug.LogWarning("[SaveLoadManager] GameManager.Instance is null!");
+            return;
+        }
+        
         GameData data = new GameData
         {
             // Score
-            totalScore = ScoreManager.Instance?.GetTotalScore() ?? 0,
+            totalScore = gm.Score?.GetTotalScore() ?? 0,
             
             // Upgrades
-            npcLimitLevel = GameManager.Instance.Upgrades.npcLimitLevel,
-            playerSpeedLevel = GameManager.Instance.Upgrades.playerSpeedLevel,
-            scoreMultiplierLevel = GameManager.Instance.Upgrades.scoreMultiplierLevel,
-            
-            // TODO: Thêm các data khác
+            npcLimitLevel = gm.Upgrades?.npcLimitLevel ?? 1,
+            playerSpeedLevel = gm.Upgrades?.playerSpeedLevel ?? 1,
+            scoreMultiplierLevel = gm.Upgrades?.scoreMultiplierLevel ?? 1,
         };
         
         string json = JsonUtility.ToJson(data, true);
@@ -52,16 +57,20 @@ public class SaveLoadManager : MonoBehaviour
             return;
         }
         
+        var gm = GameManager.Instance;
+        if (gm == null || gm.Upgrades == null)
+        {
+            Debug.LogWarning("[SaveLoadManager] GameManager or Upgrades is null!");
+            return;
+        }
+        
         string json = PlayerPrefs.GetString("GameData");
         GameData data = JsonUtility.FromJson<GameData>(json);
         
         // Load upgrades
-        var upgrades = GameManager.Instance.Upgrades;
-        upgrades.npcLimitLevel = data.npcLimitLevel;
-        upgrades.playerSpeedLevel = data.playerSpeedLevel;
-        upgrades.scoreMultiplierLevel = data.scoreMultiplierLevel;
-        
-        // TODO: Load các data khác
+        gm.Upgrades.npcLimitLevel = data.npcLimitLevel;
+        gm.Upgrades.playerSpeedLevel = data.playerSpeedLevel;
+        gm.Upgrades.scoreMultiplierLevel = data.scoreMultiplierLevel;
         
         Debug.Log("📂 Game Loaded!");
     }

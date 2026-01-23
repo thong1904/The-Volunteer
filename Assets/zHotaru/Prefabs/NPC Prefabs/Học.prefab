@@ -182,8 +182,8 @@ MonoBehaviour:
   movementSpeed: 4
   minMuseumTime: 30
   maxMuseumTime: 35
-  questionEventChance: 30
-  litterChance: 50
+  questionEventChance: 100
+  litterChance: 0
   behaviorTree: {fileID: 0}
 --- !u!1001 &4393190329206930449
 PrefabInstance:

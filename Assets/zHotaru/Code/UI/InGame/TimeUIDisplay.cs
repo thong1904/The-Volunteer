@@ -36,6 +36,7 @@ public class TimeUIDisplay : MonoBehaviour
         if (DayNightManager.Instance != null)
         {
             DayNightManager.Instance.OnTimeChanged -= UpdateTimeDisplay;
+            DayNightManager.Instance.OnSunset -= OnSunsetUI; // Thêm dòng này
         }
     }
 }

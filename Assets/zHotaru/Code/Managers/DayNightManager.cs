@@ -1,41 +1,37 @@
 using UnityEngine;
 using System;
 
+/// <summary>
+/// Quản lý chu kỳ ngày/đêm. Là con của GameManager.
+/// Truy cập qua: GameManager.Instance.DayNight
+/// </summary>
 public class DayNightManager : MonoBehaviour
 {
+    // Giữ static để backward compatible
     public static DayNightManager Instance { get; private set; }
 
     [Header("Thời gian")]
-    [SerializeField] private float startHour = 9f; // 9:00 sáng
-    [SerializeField] private float endHour = 18f; // 18:00 (6PM) chiều
-    [SerializeField] private float minutesPerHour = 1f; // 1 phút thực = 1 giờ trong game
+    [SerializeField] private float startHour = 9f;
+    [SerializeField] private float endHour = 18f;
+    [SerializeField] private float minutesPerHour = 1f;
 
     [Header("Skybox & Ánh sáng")]
     [SerializeField] private Material skyboxDay;
     [SerializeField] private Material skyboxSunset;
     [SerializeField] private Light sunLight;
     [SerializeField] private Color colorDay = Color.white;
-    [SerializeField] private Color colorSunset = new Color(1f, 0.7f, 0.3f); // Cam/vàng
+    [SerializeField] private Color colorSunset = new Color(1f, 0.7f, 0.3f);
 
     private float currentHour;
     private bool isRunning = true;
 
-    // Event để sau này dùng
-    // TODO: Kết nối với UI hiển thị giờ, thay đổi cảnh khi sang ngày mới
     public event Action<float> OnTimeChanged;
     public event Action OnSunset;
     public event Action OnNewDay;
 
-    private void Awake()
+    void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        Instance = this;
     }
 
     private void Start()
