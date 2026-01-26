@@ -202,7 +202,7 @@ public class NPCBehaviorTree : MonoBehaviour
     #region NPC Sound Methods
 
     /// <summary>
-    /// Bắt đầu phát âm thanh hỏi lặp lại (male/female sound)
+    /// Bắt đầu phát âm thanh hỏi lặp lại (male/female sound) - 3D
     /// </summary>
     public void StartQuestionSound()
     {
@@ -232,42 +232,42 @@ public class NPCBehaviorTree : MonoBehaviour
     }
 
     /// <summary>
-    /// Phát âm thanh hỏi một lần (male/female)
+    /// Phát âm thanh hỏi một lần (male/female) - 3D tại vị trí NPC
     /// </summary>
     public void PlayQuestionSound()
     {
         if (SoundManager.Instance == null) return;
 
         if (gender == NPCGender.Male)
-            SoundManager.Instance.PlayMale();
+            SoundManager.Instance.PlayMale3D(transform.position);
         else
-            SoundManager.Instance.PlayFemale();
+            SoundManager.Instance.PlayFemale3D(transform.position);
     }
 
     /// <summary>
-    /// Phát âm thanh khi trả lời đúng
+    /// Phát âm thanh khi trả lời đúng - 3D tại vị trí NPC
     /// </summary>
     public void PlayCorrectAnswerSound()
     {
         if (SoundManager.Instance == null) return;
 
         if (gender == NPCGender.Male)
-            SoundManager.Instance.PlayMaYeah();
+            SoundManager.Instance.PlayMaYeah3D(transform.position);
         else
-            SoundManager.Instance.PlayFeYeah();
+            SoundManager.Instance.PlayFeYeah3D(transform.position);
     }
 
     /// <summary>
-    /// Phát âm thanh khi trả lời sai
+    /// Phát âm thanh khi trả lời sai - 3D tại vị trí NPC
     /// </summary>
     public void PlayWrongAnswerSound()
     {
         if (SoundManager.Instance == null) return;
 
         if (gender == NPCGender.Male)
-            SoundManager.Instance.PlayMaHuh();
+            SoundManager.Instance.PlayMaHuh3D(transform.position);
         else
-            SoundManager.Instance.PlayFeHuh();
+            SoundManager.Instance.PlayFeHuh3D(transform.position);
     }
 
     #endregion

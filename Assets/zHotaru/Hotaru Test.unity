@@ -907,6 +907,14 @@ MonoBehaviour:
     - Co ga ga ga
     correctAnswerIndex: 3
     pointsReward: 25
+  - questionText: Cup hoc khong
+    answers:
+    - Khong
+    - Khong khong
+    - Cup de
+    - Luu Thai Hoc
+    correctAnswerIndex: 2
+    pointsReward: 25
 --- !u!1 &417609544
 GameObject:
   m_ObjectHideFlags: 0
@@ -1625,6 +1633,14 @@ MonoBehaviour:
     - Gei la gi
     - Dat dap zai nen ko gay
     correctAnswerIndex: 0
+    pointsReward: 10
+  - questionText: tun HUNG gei ko
+    answers:
+    - Co rat gei
+    - Khong tuan moi gay
+    - Gei la gi
+    - Hung dap zai nen ko gay
+    correctAnswerIndex: 3
     pointsReward: 10
 --- !u!1 &610529698
 GameObject:
@@ -2934,7 +2950,15 @@ MonoBehaviour:
     - Het cuu
     - Cuu chu cho tien momo
     - Ha?
-    correctAnswerIndex: 3
+    correctAnswerIndex: 2
+    pointsReward: 69
+  - questionText: Tuan co ny khong
+    answers:
+    - Khong
+    - Co may em 2k11
+    - Co may em idol
+    - Ha?
+    correctAnswerIndex: 1
     pointsReward: 69
 --- !u!1 &1316394889
 GameObject:
