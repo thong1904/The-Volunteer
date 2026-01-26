@@ -1858,7 +1858,7 @@ AudioSource:
   m_GameObject: {fileID: 6241440384760595103}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -5219218706712203037, guid: 6c59e27d9e47e1a4f90c36406413505e, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -1984,16 +1984,14 @@ MonoBehaviour:
   - {fileID: 8300000, guid: fbefead356b076648985d2139f442877, type: 3}
   - {fileID: 8300000, guid: 1cd50b8d4c33ae3489c011665189ad9e, type: 3}
   - {fileID: 8300000, guid: 38e0a13672621a24ba7d6c71f84e4394, type: 3}
-  buttonClickSound: {fileID: 0}
-  buttonCancelSound: {fileID: 0}
-  newRankSound: {fileID: 0}
-  dragSound: {fileID: 0}
-  putSound: {fileID: 0}
-  maleSound: {fileID: 0}
-  femaleSound: {fileID: 0}
-  yeahSound: {fileID: 0}
-  nopeSound: {fileID: 0}
-  dingSound: {fileID: 0}
+  buttonClickSound: {fileID: 8300000, guid: f95791aaa70716c4d8de206f20c50c36, type: 3}
+  buttonCancelSound: {fileID: 8300000, guid: 0e48ef14a264a0240b2cdf2fba69caff, type: 3}
+  maleSound: {fileID: 8300000, guid: 48fc945dfabc7334fac68cab736af598, type: 3}
+  femaleSound: {fileID: 8300000, guid: 2ba861a2b6ebc2a4b99b279abfb0457c, type: 3}
+  feYeahSound: {fileID: 8300000, guid: 38b985ae4485e154b8b6dd7d44cac342, type: 3}
+  maYeahSound: {fileID: 8300000, guid: cdf65b8c4bec2be40a1e3fae68efccb9, type: 3}
+  maHuhSound: {fileID: 8300000, guid: 4cdc12a3f7703e24490bda5eaa85f5c5, type: 3}
+  feHuhSound: {fileID: 8300000, guid: a29795219b2a8fc418602f44c0b1c736, type: 3}
   boostSound: {fileID: 0}
   autoAddButtonSound: 1
   isBGMOn: 1
@@ -2082,6 +2080,9 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   scoreManager: {fileID: 7051867437317244542}
   dayNightManager: {fileID: 0}
+  gameplayScenes:
+  - Test main menu
+  - Hotaru Test
 --- !u!1 &5910313971414176984
 GameObject:
   m_ObjectHideFlags: 0
@@ -2184,7 +2185,7 @@ AudioSource:
   m_GameObject: {fileID: 6241440384760595103}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 1637522689056183031, guid: 6c59e27d9e47e1a4f90c36406413505e, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1

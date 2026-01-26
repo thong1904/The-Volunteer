@@ -57,11 +57,11 @@ public class NPCManager : MonoBehaviour
             {
                 cachedDisplays[i] = displays[i].transform;
             }
-            Debug.Log($"Found {cachedDisplays.Length} display areas");
+            Debug.Log($"[NPCManager] Found {cachedDisplays.Length} display areas");
         }
         
-        InitializePool(customerPrefabs, currentMaxCustomers);
-        InitializePool(supportPrefabs, currentMaxSupport);
+        // Không cần khởi tạo pool sớm - dùng lazy pooling
+        // NPC sẽ được tạo khi spawn và trở thành pool khi despawn
     }
 
     void Update()
@@ -78,35 +78,22 @@ public class NPCManager : MonoBehaviour
             nextSupportSpawnTime = Time.time + supportSpawnInterval;
         }
     }
-
-    private void InitializePool(List<GameObject> prefabs, int count)
+    
+    /// <summary>
+    /// Lấy vị trí spawn ngẫu nhiên từ spawnPoints hoặc entrancePoint
+    /// </summary>
+    private Vector3 GetRandomSpawnPosition()
     {
-        if (prefabs == null || prefabs.Count == 0 || count <= 0) return;
-
-        // Khởi tạo queue cho từng prefab
-        for (int i = 0; i < prefabs.Count; i++)
+        if (spawnPoints != null && spawnPoints.Count > 0)
         {
-            if (!pool.ContainsKey(prefabs[i]))
-                pool[prefabs[i]] = new Queue<GameObject>();
+            Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
+            return spawnPoint != null ? spawnPoint.position : Vector3.zero;
         }
-
-        // Phân bổ đều số lượng cho từng prefab
-        int countPerPrefab = Mathf.CeilToInt((float)count / prefabs.Count);
-        
-        for (int i = 0; i < prefabs.Count; i++)
+        else if (entrancePoint != null)
         {
-            GameObject prefab = prefabs[i];
-            int createCount = Mathf.Min(countPerPrefab, count - i * countPerPrefab);
-            
-            for (int j = 0; j < createCount; j++)
-            {
-                GameObject npc = Instantiate(prefab, npcContainer);
-                npc.SetActive(false);
-                pool[prefab].Enqueue(npc);
-            }
-            
-            Debug.Log($"Created {createCount} instances of {prefab.name}");
+            return entrancePoint.position;
         }
+        return Vector3.zero;
     }
 
     public void StartCustomerSpawning()
@@ -134,72 +121,63 @@ public class NPCManager : MonoBehaviour
     {
         if (prefabs == null || prefabs.Count == 0)
         {
-            Debug.LogWarning("Chưa gán prefab cho nhóm NPC này.");
+            Debug.LogWarning("[NPCManager] Chưa gán prefab cho nhóm NPC này.");
             return;
         }
 
-        // Chọn spawn point ngẫu nhiên (hoặc dùng entrancePoint nếu không có spawnPoints)
-        Vector3 spawnPosition;
-        if (spawnPoints != null && spawnPoints.Count > 0)
+        // Chọn spawn point ngẫu nhiên
+        Vector3 spawnPosition = GetRandomSpawnPosition();
+        if (spawnPosition == Vector3.zero && entrancePoint == null && (spawnPoints == null || spawnPoints.Count == 0))
         {
-            Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
-            spawnPosition = spawnPoint.position;
-        }
-        else if (entrancePoint != null)
-        {
-            spawnPosition = entrancePoint.position;
-        }
-        else
-        {
-            Debug.LogWarning("Chưa gán spawn point hoặc entrance point cho NPCManager.");
+            Debug.LogWarning("[NPCManager] Chưa gán spawn point hoặc entrance point.");
             return;
         }
 
-        // Chọn prefab ngẫu nhiên và lấy từ pool
+        // Chọn prefab ngẫu nhiên
         GameObject prefab = prefabs[Random.Range(0, prefabs.Count)];
+        
+        // Thử lấy từ pool (NPC đã despawn trước đó)
         GameObject npc = GetFromPool(prefab);
         
         if (npc == null)
         {
-            Debug.LogWarning($"Pool hết NPC cho prefab: {prefab.name}. Tạo thêm instance mới.");
-            // Tạo thêm instance mới nếu pool hết
-            npc = Instantiate(prefab, npcContainer);
-            pool[prefab].Enqueue(npc);
+            // Không có trong pool → tạo mới
+            npc = Instantiate(prefab, spawnPosition, Quaternion.identity, npcContainer);
+            Debug.Log($"[NPCManager] Tạo mới {npc.name}");
+        }
+        else
+        {
+            Debug.Log($"[NPCManager] Tái sử dụng {npc.name} từ pool");
         }
 
         // Reset NPC state trước khi spawn
         NPCBehaviorTree npcBehavior = npc.GetComponent<NPCBehaviorTree>();
         if (npcBehavior != null)
         {
-            // Inject displays và entrance vào NPC
             npcBehavior.SetDisplays(cachedDisplays);
             npcBehavior.SetEntrancePoint(entrancePoint);
-            
-            // Reset state
             npcBehavior.ResetState();
         }
 
-        // place transform
+        // Đặt vị trí spawn
         npc.transform.position = spawnPosition;
         npc.transform.rotation = Quaternion.identity;
 
-        // ensure agent is snapped to NavMesh
+        // Ensure agent is snapped to NavMesh
         var agent = npc.GetComponent<NavMeshAgent>();
         if (agent != null)
         {
-            bool wasEnabled = agent.enabled;
             agent.enabled = true;
             if (NavMesh.SamplePosition(spawnPosition, out NavMeshHit hit, 3f, NavMesh.AllAreas))
                 agent.Warp(hit.position);
             else
                 agent.Warp(spawnPosition);
-            agent.enabled = wasEnabled || agent.enabled;
         }
 
         npc.SetActive(true);
         activeList.Add(npc);
         
-        Debug.Log($"Spawned {prefab.name} at {spawnPosition}");
+        Debug.Log($"[NPCManager] Spawned {npc.name} at {spawnPosition}");
     }
 
     public void DespawnNPC(GameObject npc)
@@ -207,7 +185,39 @@ public class NPCManager : MonoBehaviour
         if (activeCustomers.Remove(npc) || activeSupport.Remove(npc))
         {
             npc.SetActive(false);
+            
+            // Thêm vào pool để tái sử dụng sau
+            // Tìm prefab gốc dựa trên tên (loại bỏ "(Clone)")
+            string npcName = npc.name.Replace("(Clone)", "").Trim();
+            GameObject matchingPrefab = FindMatchingPrefab(npcName);
+            
+            if (matchingPrefab != null)
+            {
+                if (!pool.ContainsKey(matchingPrefab))
+                    pool[matchingPrefab] = new Queue<GameObject>();
+                    
+                pool[matchingPrefab].Enqueue(npc);
+                Debug.Log($"[NPCManager] {npc.name} đã được thêm vào pool");
+            }
         }
+    }
+    
+    /// <summary>
+    /// Tìm prefab phù hợp dựa trên tên
+    /// </summary>
+    private GameObject FindMatchingPrefab(string npcName)
+    {
+        foreach (var prefab in customerPrefabs)
+        {
+            if (prefab != null && prefab.name == npcName)
+                return prefab;
+        }
+        foreach (var prefab in supportPrefabs)
+        {
+            if (prefab != null && prefab.name == npcName)
+                return prefab;
+        }
+        return null;
     }
 
     public void DespawnAllNPCs()
@@ -221,49 +231,23 @@ public class NPCManager : MonoBehaviour
     public void UpgradeMaxCustomers(int newLimit)
     {
         if (newLimit <= currentMaxCustomers) return;
-        AddToPool(customerPrefabs, newLimit - currentMaxCustomers);
         currentMaxCustomers = newLimit;
+        Debug.Log($"[NPCManager] Max customers upgraded to {currentMaxCustomers}");
     }
 
     public void UpgradeMaxSupport(int newLimit)
     {
         if (newLimit <= currentMaxSupport) return;
-        AddToPool(supportPrefabs, newLimit - currentMaxSupport);
         currentMaxSupport = newLimit;
-    }
-
-    private void AddToPool(List<GameObject> prefabs, int addCount)
-    {
-        if (prefabs == null || prefabs.Count == 0) return;
-        
-        int countPerPrefab = Mathf.CeilToInt((float)addCount / prefabs.Count);
-        
-        for (int i = 0; i < prefabs.Count; i++)
-        {
-            GameObject prefab = prefabs[i];
-            int createCount = Mathf.Min(countPerPrefab, addCount - i * countPerPrefab);
-            
-            for (int j = 0; j < createCount; j++)
-            {
-                GameObject npc = Instantiate(prefab, npcContainer);
-                npc.SetActive(false);
-                pool[prefab].Enqueue(npc);
-            }
-        }
+        Debug.Log($"[NPCManager] Max support upgraded to {currentMaxSupport}");
     }
 
     private GameObject GetFromPool(GameObject prefab)
     {
-        if (!pool.ContainsKey(prefab) || pool[prefab].Count == 0) return null;
+        if (!pool.ContainsKey(prefab) || pool[prefab].Count == 0)
+            return null;
         
-        // Tìm NPC đang inactive trong pool
-        int count = pool[prefab].Count;
-        for (int i = 0; i < count; i++)
-        {
-            GameObject npc = pool[prefab].Dequeue();
-            pool[prefab].Enqueue(npc);
-            if (!npc.activeInHierarchy) return npc;
-        }
-        return null;
+        // Lấy NPC từ pool (đã inactive sẵn từ despawn)
+        return pool[prefab].Dequeue();
     }
 }

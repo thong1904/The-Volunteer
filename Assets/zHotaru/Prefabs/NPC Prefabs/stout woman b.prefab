@@ -1,0 +1,236 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5817188859181829795
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4080632622746247578}
+  - component: {fileID: 1686233586933805402}
+  - component: {fileID: 6312009811066461667}
+  - component: {fileID: 3280294124569401771}
+  - component: {fileID: 8417242494742895759}
+  m_Layer: 0
+  m_Name: stout woman b
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4080632622746247578
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5817188859181829795}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8831420049009223518}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &1686233586933805402
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5817188859181829795}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: aa18ba140040d32439939bba79e19639, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!195 &6312009811066461667
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5817188859181829795}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &3280294124569401771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5817188859181829795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d7b55c7ecdb49a4a89fa5e6f9022861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startWhenEnabled: 1
+  asynchronousLoad: 0
+  pauseWhenDisabled: 0
+  restartWhenComplete: 0
+  logTaskChanges: 0
+  group: 0
+  resetValuesOnRestart: 0
+  externalBehavior: {fileID: 0}
+  mBehaviorSource:
+    behaviorName: NPC Behavior
+    behaviorDescription: 
+    mTaskData:
+      types: []
+      parentIndex: 
+      startIndex: 
+      variableStartIndex: 
+      JSONSerialization: '{"EntryTask":{"Type":"BehaviorDesigner.Runtime.Tasks.EntryTask","NodeData":{"Offset":"(443.5,30)"},"ID":0,"Name":"Entry","Instant":true},"RootTask":{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(3.5,119.999992)"},"ID":1,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(3.49999428,118.297783)"},"ID":2,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckDayEnded","NodeData":{"Offset":"(-161.914871,120)"},"ID":3,"Name":"Check
+        Day Ended","Instant":true},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(156.69136,116.382988)"},"ID":4,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"NPCMoveToTargetNavMesh","NodeData":{"Offset":"(-174.8837,130)"},"ID":5,"Name":"Move
+        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk"},{"Type":"SetEnteredMuseum","NodeData":{"Offset":"(0.1616211,134.5794)"},"ID":6,"Name":"Set
+        Entered Museum","Instant":true},{"Type":"BehaviorDesigner.Runtime.Tasks.Repeater","NodeData":{"Offset":"(135.281128,123.865105)"},"ID":7,"Name":"Repeater","Instant":true,"SharedIntcount":{"Type":"BehaviorDesigner.Runtime.SharedInt","Name":null,"Int32mValue":0},"SharedBoolrepeatForever":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true},"SharedBoolendOnFailure":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true},"Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(-4.28540039,115.238159)"},"ID":8,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-319.069244,129.7959)"},"ID":9,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckTimeToLeaveMuseum","NodeData":{"Offset":"(-100,130)"},"ID":10,"Name":"Check
+        Time To Leave","Instant":true},{"Type":"NPCLeaveMuseum","NodeData":{"Offset":"(92.38501,131.750061)"},"ID":11,"Name":"Leave
+        Museum","Instant":true,"SinglestoppingDistance":1,"StringwalkAnimationName":"walk"}]},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-1.90496826,128.095215)"},"ID":12,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckLittering","NodeData":{"Offset":"(-67.71912,128.960312)"},"ID":13,"Name":"Check
+        Littering","Instant":true},{"Type":"NPCLitteringBehavior","NodeData":{"Offset":"(71.28088,139.5853)"},"ID":14,"Name":"Littering
+        Behavior","Instant":true,"List`1trashPrefabs":[0,1],"TransformtrashSpawnPoint":2,"SinglespawnHeight":0.5,"SinglelitterCooldown":5}]},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(426.6666,128.095215)"},"ID":15,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"SetTargetDisplay","NodeData":{"Offset":"(-176.8317,134.870972)"},"ID":16,"Name":"Set
+        Target Display","Instant":true},{"Type":"NPCMoveToTargetNavMesh","NodeData":{"Offset":"(0,130)"},"ID":17,"Name":"Move
+        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk"},{"Type":"NPCWaitAtDisplay","NodeData":{"Offset":"(171.155182,130.775757)"},"ID":18,"Name":"Wait
+        At Display","Instant":true,"SingleminWaitTime":3,"SinglemaxWaitTime":8,"StringidleAnimationName":"idle","SinglerotationSpeed":5,"StringplayerTag":"Player","SharedBoolshouldTriggerQuestion":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true}},{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(302.828125,130.012939)"},"ID":19,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-1.43603516,114.042725)"},"ID":20,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckQuestionEvent","NodeData":{"Offset":"(-99.27673,126.543945)"},"ID":21,"Name":"Check
+        Question Event","Instant":true,"SingletriggerRadius":5,"StringplayerTag":"Player","SinglechancePercent":50,"BooleanrequireIsAtDisplay":true,"SharedBoolisAtDisplay":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true}},{"Type":"NPCQuestionEvent","NodeData":{"Offset":"(90,130)"},"ID":22,"Name":"Question
+        Event","Instant":true,"StringwaveAnimationName":"wave","QuestionData[]questions":[],"SingletimeLimitSeconds":15,"StringplayerTag":"Player","SinglefaceRotationSpeed":8,"BooleansimulateInteraction":true}]}]}]}]}]}]}]}]}}'
+      fieldSerializationData:
+        typeName: []
+        fieldNameHash: 
+        startIndex: 
+        dataPosition: 
+        unityObjects:
+        - {fileID: 2781089773915139224, guid: 596ef66624c07ef4a88a09580410b809, type: 3}
+        - {fileID: 7612991635544277475, guid: 6cd34d335aa693c48be67dc50a1e16ae, type: 3}
+        - {fileID: 0}
+        byteData: 
+        byteDataArray: 
+      Version: 1.7.9
+  gizmoViewMode: 2
+  showBehaviorDesignerGizmo: 1
+--- !u!114 &8417242494742895759
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5817188859181829795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b51a7e2514f3e9041ae63987a30a44bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  npcName: Thu
+  gender: 1
+  museumEntranceTransform: {fileID: 0}
+  displayTransforms:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  museumEntrance: {x: 0, y: 0, z: 0}
+  displayPositions: []
+  movementSpeed: 3
+  minMuseumTime: 30
+  maxMuseumTime: 35
+  litterChance: 50
+  questionTriggerRadius: 15
+  questionChancePercent: 100
+  showQuestionRadiusGizmo: 1
+  behaviorTree: {fileID: 0}
+--- !u!1001 &9008669040293986485
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 4080632622746247578}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -4617869273722284368, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_Name
+      value: skeleton
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+      propertyPath: m_Name
+      value: model
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+--- !u!4 &8831420049009223518 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b9e7a7355c011594b9c66a6c571b9283, type: 3}
+  m_PrefabInstance: {fileID: 9008669040293986485}
+  m_PrefabAsset: {fileID: 0}
