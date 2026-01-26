@@ -1,59 +1,73 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class MenuManager : MonoBehaviour
 {
-    public GameObject settingsPanel;
-    public PlayerInput playerInput;
-    public PlayerLook mouseLook;
+    public static MenuManager Instance;
 
-    bool isOpen = false;
+    public GameObject menuUI;
+    PlayerLook look;
 
-    public void OnToggleMenu(InputAction.CallbackContext ctx)
+    bool isOpen;
+    bool isTransitioning; // 🔑 khóa double trigger
+
+    [System.Obsolete]
+    void Awake()
     {
-        if (!ctx.performed) return;
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+
+        look = FindObjectOfType<PlayerLook>();
+        menuUI.SetActive(false);
+    }
+
+    public void Toggle()
+    {
+        if (isTransitioning) return;
+
+        isTransitioning = true;
         isOpen = !isOpen;
 
-        settingsPanel.SetActive(isOpen);
-
         if (isOpen)
-            OpenMenu();
+            Open();
         else
-            CloseMenu();
+            Close();
+
+        // mở khóa ở cuối frame
+        Invoke(nameof(Unlock), 0f);
     }
-   void Start()
-{
-    isOpen = false;
-    settingsPanel.SetActive(false);
 
-    playerInput.enabled = false;
-    playerInput.enabled = true;
+    void Unlock() => isTransitioning = false;
 
-    playerInput.SwitchCurrentActionMap("Player");
-
-    Cursor.lockState = CursorLockMode.Locked;
-    Cursor.visible = false;
-}
-
-    void OpenMenu()
+    void Open()
     {
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
-
         Time.timeScale = 0f;
 
-        playerInput.SwitchCurrentActionMap("UI");
-        mouseLook.enabled = false;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        if (look != null)
+            look.allowLook = false;
+
+        menuUI.SetActive(true);
     }
 
-    void CloseMenu()
+    void Close()
     {
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
-
         Time.timeScale = 1f;
 
-        playerInput.SwitchCurrentActionMap("Player");
-        mouseLook.enabled = true;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        if (look != null)
+            look.allowLook = true;
+
+        menuUI.SetActive(false);
     }
+
+    public bool IsOpen => isOpen;
 }

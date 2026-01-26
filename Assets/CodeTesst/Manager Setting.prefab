@@ -9,9 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8906316694350368657}
-  - component: {fileID: 3052755573088467487}
-  - component: {fileID: 3970005060910700004}
-  - component: {fileID: 7099553017147403095}
+  - component: {fileID: 201667558990149876}
   m_Layer: 0
   m_Name: SettingsManager
   m_TagString: Untagged
@@ -34,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5080553824187018707}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3052755573088467487
+--- !u!114 &201667558990149876
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -43,38 +41,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 321229967448326416}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed60c35be6e70fa4d9ff0bb757f5bbdc, type: 3}
+  m_Script: {fileID: 11500000, guid: 3a4f578d099e70847881d7a258be8d5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mouseLook: {fileID: 0}
-  sensitivitySlider: {fileID: 0}
-  sensitivityText: {fileID: 0}
---- !u!114 &3970005060910700004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 321229967448326416}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42eb295c5d926c248b43f463b2e51c94, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
---- !u!114 &7099553017147403095
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 321229967448326416}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f743ec6a99cc70f4fae4e68661e280d2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  mouseSensitivity: 1
 --- !u!1 &1572408311471797106
 GameObject:
   m_ObjectHideFlags: 0
@@ -84,7 +55,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5080553824187018707}
-  - component: {fileID: 555735645702095687}
   m_Layer: 0
   m_Name: Manager Setting
   m_TagString: Untagged
@@ -110,18 +80,6 @@ Transform:
   - {fileID: 804431877580696998}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &555735645702095687
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1572408311471797106}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9e49497ab1d79f4f8548d88a3b980c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &6243732253392139426
 GameObject:
   m_ObjectHideFlags: 0
@@ -166,9 +124,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 010bab523ba02f14ebdbbb78e7ec9b82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  settingsPanel: {fileID: 0}
-  playerInput: {fileID: 0}
-  mouseLook: {fileID: 0}
 --- !u!1 &6870116872999265577
 GameObject:
   m_ObjectHideFlags: 0

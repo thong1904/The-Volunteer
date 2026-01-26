@@ -125,6 +125,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Scenes"",
+                    ""type"": ""Button"",
+                    ""id"": ""c2d52474-7a38-4a13-aba0-8a0de6742821"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -490,6 +499,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Menu"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4ecf3f35-619f-4b43-b1de-8b341695ced2"",
+                    ""path"": ""<Keyboard>/l"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Scenes"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -609,6 +629,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_Scan = m_Player.FindAction("Scan", throwIfNotFound: true);
         m_Player_Menu = m_Player.FindAction("Menu", throwIfNotFound: true);
+        m_Player_Scenes = m_Player.FindAction("Scenes", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Menu = m_UI.FindAction("Menu", throwIfNotFound: true);
@@ -690,6 +711,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Sprint;
     private readonly InputAction m_Player_Scan;
     private readonly InputAction m_Player_Menu;
+    private readonly InputAction m_Player_Scenes;
     public struct PlayerActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -705,6 +727,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Sprint => m_Wrapper.m_Player_Sprint;
         public InputAction @Scan => m_Wrapper.m_Player_Scan;
         public InputAction @Menu => m_Wrapper.m_Player_Menu;
+        public InputAction @Scenes => m_Wrapper.m_Player_Scenes;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -747,6 +770,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Menu.started += instance.OnMenu;
             @Menu.performed += instance.OnMenu;
             @Menu.canceled += instance.OnMenu;
+            @Scenes.started += instance.OnScenes;
+            @Scenes.performed += instance.OnScenes;
+            @Scenes.canceled += instance.OnScenes;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -784,6 +810,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Menu.started -= instance.OnMenu;
             @Menu.performed -= instance.OnMenu;
             @Menu.canceled -= instance.OnMenu;
+            @Scenes.started -= instance.OnScenes;
+            @Scenes.performed -= instance.OnScenes;
+            @Scenes.canceled -= instance.OnScenes;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -905,6 +934,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnSprint(InputAction.CallbackContext context);
         void OnScan(InputAction.CallbackContext context);
         void OnMenu(InputAction.CallbackContext context);
+        void OnScenes(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

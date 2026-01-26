@@ -1,6 +1,6 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
@@ -10,71 +10,123 @@ public class PlayerMovement : MonoBehaviour
     public float jumpHeight = 1.5f;
 
     [Header("Crouch")]
-    public float crouchHeight = 1.0f;
     public float standHeight = 1.8f;
+    public float crouchHeight = 1.0f;
 
     CharacterController controller;
-    Vector2 moveInput;
     Vector3 velocity;
+    bool canRequestJump = true;
 
-    bool isSprinting;
     bool isCrouching;
+    bool jumpRequested;
+    bool hasJumped;
 
     void Awake()
     {
         controller = GetComponent<CharacterController>();
+        controller.height = standHeight;
     }
-
-    /* ===== INPUT EVENTS ===== */
-
-    public void OnMove(InputAction.CallbackContext ctx)
-    {
-        moveInput = ctx.ReadValue<Vector2>();
-    }
-
-    public void OnSprint(InputAction.CallbackContext ctx)
-    {
-        isSprinting = ctx.ReadValueAsButton();
-    }
-
-    public void OnJump(InputAction.CallbackContext ctx)
-    {
-        if (ctx.performed && controller.isGrounded)
-        {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        }
-    }
-
-    public void OnCrouch(InputAction.CallbackContext ctx)
-    {
-        if (ctx.performed)
-            ToggleCrouch();
-    }
-
-    /* ===== LOGIC ===== */
 
     void Update()
     {
-        bool grounded = controller.isGrounded;
-        if (grounded && velocity.y < 0)
-            velocity.y = -2f;
-
-        float speed = isSprinting ? sprintSpeed : walkSpeed;
-        if (isCrouching) speed *= 0.5f;
-
-        Vector3 move =
-            transform.right * moveInput.x +
-            transform.forward * moveInput.y;
-
-        controller.Move(move * speed * Time.deltaTime);
-
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+        HandleJump();      // đọc input trước
+        HandleCrouch();
+        ApplyGravity();    // cập nhật velocity.y
+        HandleMovement();  // Move DUY NHẤT 1 LẦN
     }
 
-    void ToggleCrouch()
+    /* ================= MOVEMENT ================= */
+
+   void HandleMovement()
+{
+    Vector2 input = GameInputManager.Instance.Move;
+
+    float speed;
+
+    if (isCrouching)
     {
-        isCrouching = !isCrouching;
-        controller.height = isCrouching ? crouchHeight : standHeight;
+        speed = walkSpeed * 0.5f; // crouch speed
     }
+    else if (GameInputManager.Instance.Sprint)
+    {
+        speed = sprintSpeed;
+    }
+    else
+    {
+        speed = walkSpeed;
+    }
+
+    Vector3 move =
+        transform.right * input.x +
+        transform.forward * input.y;
+
+    Vector3 finalMove = move * speed;
+    finalMove.y = velocity.y;
+
+    controller.Move(finalMove * Time.deltaTime);
+}
+
+    /* ================= JUMP ================= */
+
+   void HandleJump()
+{
+    // ❌ nếu đang crouch → hủy jump ngay
+    if (isCrouching)
+    {
+        GameInputManager.Instance.ConsumeJump();
+        jumpRequested = false;
+        return;
+    }
+
+    if (GameInputManager.Instance.Jump && canRequestJump)
+    {
+        jumpRequested = true;
+        canRequestJump = false;
+        GameInputManager.Instance.ConsumeJump();
+    }
+
+    if (hasJumped)
+        return;
+
+    if (jumpRequested && controller.isGrounded)
+    {
+        velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        hasJumped = true;
+        jumpRequested = false;
+    }
+}
+
+
+
+    /* ================= CROUCH ================= */
+
+   void HandleCrouch()
+{
+    if (!GameInputManager.Instance.CrouchToggle)
+        return;
+
+    isCrouching = !isCrouching;
+    controller.height = isCrouching ? crouchHeight : standHeight;
+
+    // 🔥 CLEAR JUMP KHI ĐỔI TRẠNG THÁI
+    jumpRequested = false;
+    canRequestJump = true;
+
+    GameInputManager.Instance.ConsumeCrouch();
+}
+
+    /* ================= GRAVITY ================= */
+
+   void ApplyGravity()
+{
+    if (controller.isGrounded && velocity.y < 0)
+    {
+        velocity.y = -2f;
+        hasJumped = false;
+        canRequestJump = true; // 🔓 cho phép nhận jump mới
+    }
+
+    velocity.y += gravity * Time.deltaTime;
+}
+
 }

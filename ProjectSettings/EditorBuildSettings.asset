@@ -20,6 +20,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/zHotaru/Hotaru Test.unity
     guid: 74d791ae1845c0947ab1ba404fd51727
+  - enabled: 1
+    path: Assets/Scenes/Thong.unity
+    guid: c598ee21a6b2096439d21432acc1e1bf
+  - enabled: 1
+    path: Assets/hoc/map.unity
+    guid: e12d95aa5b500674897e4fa7f2fa8036
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
