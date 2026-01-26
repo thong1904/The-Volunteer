@@ -1,95 +1,56 @@
 using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
-using System;
 
+/// <summary>
+/// UIManager - Quản lý tất cả UI controllers trong scene.
+/// Là con của GameManager, không dùng singleton.
+/// Truy cập qua: GameManager.Instance.UI
+/// </summary>
 public class UIManager : MonoBehaviour
 {
-    public static UIManager Instance { get; private set; }
+    [Header("UI Controllers (Gán trong từng scene)")]
+    [SerializeField] private QuestionUIController questionController;
+    [SerializeField] private ScoreUI scoreUI;
     
-    [SerializeField] private GameObject questionPanel;
-    [SerializeField] private TextMeshProUGUI questionText;
-    [SerializeField] private TextMeshProUGUI npcNameText;
-    [SerializeField] private Transform answersContainer;
-    [SerializeField] private GameObject answerButtonPrefab;
+    // Properties để truy cập các controller
+    public QuestionUIController Question => questionController;
+    public ScoreUI Score => scoreUI;
     
-    private Action<int> onAnswerSelected;
-    
-    void Awake()
+    /// <summary>
+    /// Gọi từ GameManager.Awake() để khởi tạo
+    /// </summary>
+    public void Initialize()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        
-        Instance = this;
+        Debug.Log("[UIManager] Initialized");
     }
     
-    void Start()
+    /// <summary>
+    /// Tìm và gán các UI controllers trong scene hiện tại
+    /// Gọi khi chuyển scene nếu cần
+    /// </summary>
+    public void FindSceneUIControllers()
     {
-        if (questionPanel != null)
-            questionPanel.SetActive(false);
+        if (questionController == null)
+            questionController = FindAnyObjectByType<QuestionUIController>();
+        
+        if (scoreUI == null)
+            scoreUI = FindAnyObjectByType<ScoreUI>();
+        
+        Debug.Log($"[UIManager] Found controllers - Question: {questionController != null}, Score: {scoreUI != null}");
     }
     
-    public void ShowQuestion(string npcName, string question, string[] answers, 
-        int correctAnswerIndex, Action<int> onAnswerCallback)
+    /// <summary>
+    /// Set QuestionUIController từ bên ngoài (scene-specific)
+    /// </summary>
+    public void SetQuestionController(QuestionUIController controller)
     {
-        if (questionPanel == null)
-        {
-            Debug.LogWarning("Question Panel chưa được gán!");
-            return;
-        }
-        
-        onAnswerSelected = onAnswerCallback;
-        
-        // Cập nhật tên NPC
-        if (npcNameText != null)
-            npcNameText.text = npcName;
-        
-        // Cập nhật câu hỏi
-        if (questionText != null)
-            questionText.text = question;
-        
-        // Xóa các nút cũ
-        foreach (Transform child in answersContainer)
-        {
-            Destroy(child.gameObject);
-        }
-        
-        // Tạo các nút câu trả lời
-        for (int i = 0; i < answers.Length; i++)
-        {
-            GameObject answerButton = Instantiate(answerButtonPrefab, answersContainer);
-            
-            TextMeshProUGUI answerButtonText = answerButton.GetComponentInChildren<TextMeshProUGUI>();
-            if (answerButtonText != null)
-                answerButtonText.text = answers[i];
-            
-            Button btn = answerButton.GetComponent<Button>();
-            if (btn != null)
-            {
-                int answerIndex = i;
-                btn.onClick.AddListener(() => OnAnswerSelected(answerIndex));
-            }
-        }
-        
-        // Hiển thị panel
-        questionPanel.SetActive(true);
+        questionController = controller;
     }
     
-    private void OnAnswerSelected(int answerIndex)
+    /// <summary>
+    /// Set ScoreUI từ bên ngoài (scene-specific)
+    /// </summary>
+    public void SetScoreUI(ScoreUI ui)
     {
-        // Ẩn panel
-        questionPanel.SetActive(false);
-        
-        // Gọi callback
-        onAnswerSelected?.Invoke(answerIndex);
-    }
-    
-    public void UpdateScore(int score)
-    {
-        // TODO: Cập nhật điểm trên UI
-        Debug.Log("Điểm: " + score);
+        scoreUI = ui;
     }
 }
