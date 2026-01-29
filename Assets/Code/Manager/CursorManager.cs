@@ -4,6 +4,7 @@ public class CursorManager : MonoBehaviour
 {
     void Start()
     {
+        DontDestroyOnLoad(gameObject);
         LockCursor();
     }
 
