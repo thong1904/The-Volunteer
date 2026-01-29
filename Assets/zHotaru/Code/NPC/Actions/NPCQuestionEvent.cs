@@ -120,6 +120,11 @@ public class NPCQuestionEvent : Action
                 OnAnswerReceived
             );
             isQuestionActive = true;
+            
+            // Bắt đầu phát âm thanh hỏi lặp lại
+            if (npcBehavior != null)
+                npcBehavior.StartQuestionSound();
+            
             Debug.Log($"[NPCQuestionEvent] {npcName}: Question UI shown - {currentQuestion.questionText}");
         }
         else
@@ -134,6 +139,19 @@ public class NPCQuestionEvent : Action
         var npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
         //questionAnswered = true;
         wasCorrect = isCorrect;
+        
+        // Dừng âm thanh hỏi
+        if (npcBehavior != null)
+            npcBehavior.StopQuestionSound();
+        
+        // Phát âm thanh phản hồi
+        if (npcBehavior != null)
+        {
+            if (isCorrect)
+                npcBehavior.PlayCorrectAnswerSound();
+            else
+                npcBehavior.PlayWrongAnswerSound();
+        }
         
         if (selectedIndex < 0)
         {

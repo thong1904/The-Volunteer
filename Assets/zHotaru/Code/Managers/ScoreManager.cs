@@ -47,4 +47,14 @@ public class ScoreManager : MonoBehaviour
         Debug.Log("Score Reset to 0");
         OnScoreChanged?.Invoke(totalScore);
     }
+
+    /// <summary>
+    /// Set score trực tiếp (dùng cho load game)
+    /// </summary>
+    public void SetScore(int score)
+    {
+        totalScore = score;
+        // Cập nhật UI nếu cần
+        OnScoreChanged?.Invoke(totalScore);
+    }
 }

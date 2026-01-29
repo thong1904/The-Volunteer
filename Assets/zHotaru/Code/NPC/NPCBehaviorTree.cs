@@ -1,11 +1,17 @@
 using UnityEngine;
 using BehaviorDesigner.Runtime;
 
+public enum NPCGender
+{
+    Male,
+    Female
+}
+
 public class NPCBehaviorTree : MonoBehaviour
 {
     [Header("NPC Info")]
     [SerializeField] private string npcName;
-    [SerializeField] private int npcID;
+    [SerializeField] private NPCGender gender = NPCGender.Male;
     
     [Header("Museum Settings")]
     [SerializeField] private Transform museumEntranceTransform;
@@ -39,10 +45,11 @@ public class NPCBehaviorTree : MonoBehaviour
     private bool isAtDisplay = false;
     private float museumExitTime;
     private Animator animator;
+    private Coroutine questionSoundCoroutine;
     
     public string NPCName => npcName;
+    public NPCGender Gender => gender;
     public bool IsAtDisplay { get => isAtDisplay; set => isAtDisplay = value; }
-    public int NPCID => npcID;
     public Vector3 CurrentTarget => currentTarget;
     public bool IsInMuseum => isInMuseum;
     public float MovementSpeed => movementSpeed;
@@ -191,4 +198,77 @@ public class NPCBehaviorTree : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, questionTriggerRadius);
     }
+
+    #region NPC Sound Methods
+
+    /// <summary>
+    /// Bắt đầu phát âm thanh hỏi lặp lại (male/female sound) - 3D
+    /// </summary>
+    public void StartQuestionSound()
+    {
+        StopQuestionSound(); // Dừng nếu đang chạy
+        questionSoundCoroutine = StartCoroutine(QuestionSoundLoop());
+    }
+
+    /// <summary>
+    /// Dừng phát âm thanh hỏi
+    /// </summary>
+    public void StopQuestionSound()
+    {
+        if (questionSoundCoroutine != null)
+        {
+            StopCoroutine(questionSoundCoroutine);
+            questionSoundCoroutine = null;
+        }
+    }
+
+    private System.Collections.IEnumerator QuestionSoundLoop()
+    {
+        while (true)
+        {
+            PlayQuestionSound();
+            yield return new WaitForSeconds(2f); // Lặp lại mỗi 2 giây
+        }
+    }
+
+    /// <summary>
+    /// Phát âm thanh hỏi một lần (male/female) - 3D tại vị trí NPC
+    /// </summary>
+    public void PlayQuestionSound()
+    {
+        if (SoundManager.Instance == null) return;
+
+        if (gender == NPCGender.Male)
+            SoundManager.Instance.PlayMale3D(transform.position);
+        else
+            SoundManager.Instance.PlayFemale3D(transform.position);
+    }
+
+    /// <summary>
+    /// Phát âm thanh khi trả lời đúng - 3D tại vị trí NPC
+    /// </summary>
+    public void PlayCorrectAnswerSound()
+    {
+        if (SoundManager.Instance == null) return;
+
+        if (gender == NPCGender.Male)
+            SoundManager.Instance.PlayMaYeah3D(transform.position);
+        else
+            SoundManager.Instance.PlayFeYeah3D(transform.position);
+    }
+
+    /// <summary>
+    /// Phát âm thanh khi trả lời sai - 3D tại vị trí NPC
+    /// </summary>
+    public void PlayWrongAnswerSound()
+    {
+        if (SoundManager.Instance == null) return;
+
+        if (gender == NPCGender.Male)
+            SoundManager.Instance.PlayMaHuh3D(transform.position);
+        else
+            SoundManager.Instance.PlayFeHuh3D(transform.position);
+    }
+
+    #endregion
 }
