@@ -141,6 +141,18 @@ public class QuestionUIController : MonoBehaviour
         UpdateTimerDisplay();
         isShowing = true;
         
+        // Unlock cursor để click được các button
+        if (CursorManager.Instance != null)
+        {
+            CursorManager.Instance.UnlockCursor();
+        }
+        
+        // Tạm dừng camera xoay theo chuột
+        if (PlayerLook.Instance != null)
+        {
+            PlayerLook.Instance.allowLook = false;
+        }
+        
         // Dùng VFX hoặc fade thường
         if (useVFX && uiVFX != null)
         {
@@ -157,6 +169,18 @@ public class QuestionUIController : MonoBehaviour
     {
         isShowing = false;
         answered = true;
+        
+        // Lock cursor lại khi ẩn UI
+        if (CursorManager.Instance != null)
+        {
+            CursorManager.Instance.LockCursor();
+        }
+        
+        // Cho phép camera xoay lại
+        if (PlayerLook.Instance != null)
+        {
+            PlayerLook.Instance.allowLook = true;
+        }
         
         // Dùng VFX hoặc fade thường
         if (useVFX && uiVFX != null)

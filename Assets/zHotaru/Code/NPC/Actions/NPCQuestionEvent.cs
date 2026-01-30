@@ -121,9 +121,9 @@ public class NPCQuestionEvent : Action
             );
             isQuestionActive = true;
             
-            // Bắt đầu phát âm thanh hỏi lặp lại
+            // Phát âm thanh hỏi 1 lần
             if (npcBehavior != null)
-                npcBehavior.StartQuestionSound();
+                npcBehavior.PlayQuestionSound();
             
             Debug.Log($"[NPCQuestionEvent] {npcName}: Question UI shown - {currentQuestion.questionText}");
         }
@@ -140,11 +140,7 @@ public class NPCQuestionEvent : Action
         //questionAnswered = true;
         wasCorrect = isCorrect;
         
-        // Dừng âm thanh hỏi
-        if (npcBehavior != null)
-            npcBehavior.StopQuestionSound();
-        
-        // Phát âm thanh phản hồi
+        // Phát âm thanh phản hồi 1 lần
         if (npcBehavior != null)
         {
             if (isCorrect)

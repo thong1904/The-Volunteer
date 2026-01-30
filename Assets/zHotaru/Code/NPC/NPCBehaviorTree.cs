@@ -45,7 +45,6 @@ public class NPCBehaviorTree : MonoBehaviour
     private bool isAtDisplay = false;
     private float museumExitTime;
     private Animator animator;
-    private Coroutine questionSoundCoroutine;
     
     public string NPCName => npcName;
     public NPCGender Gender => gender;
@@ -86,9 +85,64 @@ public class NPCBehaviorTree : MonoBehaviour
     {
         if (displayTransforms != null && displayTransforms.Length > 0)
         {
-            Transform randomDisplay = displayTransforms[Random.Range(0, displayTransforms.Length)];
-            var displayArea = randomDisplay.GetComponent<DisplayArea>();
-            currentTarget = displayArea != null ? displayArea.GetRandomPosition() : randomDisplay.position;
+            // Thử nhiều display để tìm vị trí hợp lệ
+            int maxAttempts = displayTransforms.Length * 3; // Thử nhiều hơn
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                Transform randomDisplay = displayTransforms[Random.Range(0, displayTransforms.Length)];
+                var displayArea = randomDisplay.GetComponent<DisplayArea>();
+                
+                Vector3 targetPos;
+                if (displayArea != null)
+                {
+                    // Truyền transform của NPC để kiểm tra path hợp lệ
+                    targetPos = displayArea.GetRandomPosition(transform);
+                }
+                else
+                {
+                    targetPos = randomDisplay.position;
+                }
+                
+                // Kiểm tra path có hợp lệ không
+                UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+                if (UnityEngine.AI.NavMesh.CalculatePath(transform.position, targetPos, UnityEngine.AI.NavMesh.AllAreas, path))
+                {
+                    if (path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+                    {
+                        currentTarget = targetPos;
+                        Debug.Log($"[NPC] {npcName}: Chọn display tại {targetPos}");
+                        return;
+                    }
+                }
+            }
+            
+            // Fallback: tìm vị trí gần nhất có thể đến được
+            Debug.LogWarning($"[NPC] {npcName}: Không tìm được display hợp lệ, thử tìm vị trí gần nhất");
+            Vector3 bestTarget = transform.position;
+            float bestDist = float.MaxValue;
+            
+            foreach (Transform display in displayTransforms)
+            {
+                var area = display.GetComponent<DisplayArea>();
+                Vector3 pos = area != null ? area.GetRandomPosition(transform) : display.position;
+                
+                UnityEngine.AI.NavMeshPath testPath = new UnityEngine.AI.NavMeshPath();
+                if (UnityEngine.AI.NavMesh.CalculatePath(transform.position, pos, UnityEngine.AI.NavMesh.AllAreas, testPath))
+                {
+                    if (testPath.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+                    {
+                        float dist = Vector3.Distance(transform.position, pos);
+                        if (dist < bestDist)
+                        {
+                            bestDist = dist;
+                            bestTarget = pos;
+                        }
+                    }
+                }
+            }
+            
+            currentTarget = bestTarget;
+            Debug.Log($"[NPC] {npcName}: Fallback - chọn display tại {currentTarget}");
         }
         else if (displayPositions != null && displayPositions.Length > 0)
         {
@@ -200,36 +254,6 @@ public class NPCBehaviorTree : MonoBehaviour
     }
 
     #region NPC Sound Methods
-
-    /// <summary>
-    /// Bắt đầu phát âm thanh hỏi lặp lại (male/female sound) - 3D
-    /// </summary>
-    public void StartQuestionSound()
-    {
-        StopQuestionSound(); // Dừng nếu đang chạy
-        questionSoundCoroutine = StartCoroutine(QuestionSoundLoop());
-    }
-
-    /// <summary>
-    /// Dừng phát âm thanh hỏi
-    /// </summary>
-    public void StopQuestionSound()
-    {
-        if (questionSoundCoroutine != null)
-        {
-            StopCoroutine(questionSoundCoroutine);
-            questionSoundCoroutine = null;
-        }
-    }
-
-    private System.Collections.IEnumerator QuestionSoundLoop()
-    {
-        while (true)
-        {
-            PlayQuestionSound();
-            yield return new WaitForSeconds(2f); // Lặp lại mỗi 2 giây
-        }
-    }
 
     /// <summary>
     /// Phát âm thanh hỏi một lần (male/female) - 3D tại vị trí NPC

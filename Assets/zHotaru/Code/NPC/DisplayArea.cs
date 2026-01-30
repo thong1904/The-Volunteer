@@ -6,50 +6,111 @@ using UnityEngine.AI;
 /// </summary>
 public class DisplayArea : MonoBehaviour
 {
-    [Header("Display Area Settings")]
-    [SerializeField] private float areaRadius = 3f; // Bán kính vùng NPC có thể đứng
+    [Header("Area Settings")]
+    [SerializeField] private Vector2 areaSizeStay = new Vector2(5f, 5f); // Vùng lớn bên ngoài - NPC có thể đứng
+    [SerializeField] private Vector2 areaSizeStop = new Vector2(2f, 2f); // Vùng nhỏ bên trong - NPC KHÔNG thể đứng
+    
+    [Header("NavMesh Settings")]
     [SerializeField] private float navMeshSampleDistance = 5f; // Khoảng cách sample trên NavMesh
+    [SerializeField] private int maxRetryAttempts = 1; // Số lần thử tìm vị trí hợp lệ
+    
+    [Header("Focus Settings")]
     [SerializeField] private Transform focusPoint; // Điểm để NPC nhìn vào (nếu null sẽ dùng center)
-    [SerializeField] private bool useColliderBounds = true; // Tự động dùng bounds của collider
     
     private Vector3 centerPosition;
-    private Collider objectCollider;
     
     void OnEnable()
     {
         centerPosition = transform.position;
-        objectCollider = GetComponent<Collider>();
     }
     
     /// <summary>
-    /// Lấy vị trí ngẫu nhiên xung quanh object
+    /// Lấy vị trí ngẫu nhiên xung quanh object (hình chữ nhật)
     /// </summary>
     public Vector3 GetRandomPosition()
     {
-        float radius = areaRadius;
+        return GetRandomPosition(null);
+    }
+    
+    /// <summary>
+    /// Lấy vị trí ngẫu nhiên và kiểm tra có path đến được từ vị trí NPC không
+    /// </summary>
+    public Vector3 GetRandomPosition(Transform npcTransform)
+    {
+        float halfWidthStay = areaSizeStay.x * 0.5f;
+        float halfLengthStay = areaSizeStay.y * 0.5f;
+        float halfWidthStop = areaSizeStop.x * 0.5f;
+        float halfLengthStop = areaSizeStop.y * 0.5f;
         
-        // Nếu bật useColliderBounds và có collider, dùng bounds để tính radius
-        if (useColliderBounds && objectCollider != null)
+        // Thử nhiều lần để tìm vị trí hợp lệ
+        for (int i = 0; i < maxRetryAttempts; i++)
         {
-            // Lấy kích thước lớn nhất của collider + thêm một chút buffer
-            Vector3 size = objectCollider.bounds.size;
-            radius = Mathf.Max(size.x, size.z) * 0.5f + 1f; // Thêm 1m buffer
+            // Chọn vị trí ngẫu nhiên trong vùng Stay (vùng lớn)
+            float randomX = Random.Range(-halfWidthStay, halfWidthStay);
+            float randomZ = Random.Range(-halfLengthStay, halfLengthStay);
+            
+            // Kiểm tra xem có nằm trong vùng Stop (vùng cấm) không
+            if (Mathf.Abs(randomX) < halfWidthStop && Mathf.Abs(randomZ) < halfLengthStop)
+            {
+                // Nằm trong vùng cấm, bỏ qua
+                continue;
+            }
+            
+            Vector3 randomPosition = centerPosition + new Vector3(randomX, 0, randomZ);
+            
+            // Sample vị trí trên NavMesh
+            if (NavMesh.SamplePosition(randomPosition, out NavMeshHit hit, navMeshSampleDistance, NavMesh.AllAreas))
+            {
+                // Nếu có NPC transform, kiểm tra xem có path đến được không
+                if (npcTransform != null)
+                {
+                    NavMeshPath path = new NavMeshPath();
+                    if (NavMesh.CalculatePath(npcTransform.position, hit.position, NavMesh.AllAreas, path))
+                    {
+                        // Chỉ chấp nhận nếu path hoàn chỉnh
+                        if (path.status == NavMeshPathStatus.PathComplete)
+                        {
+                            return hit.position;
+                        }
+                    }
+                }
+                else
+                {
+                    // Không có NPC transform, chỉ kiểm tra NavMesh
+                    return hit.position;
+                }
+            }
         }
         
-        // Chọn vị trí ngẫu nhiên trong vòng tròn
-        float randomAngle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-        float randomRadius = Random.Range(0f, radius);
-        
-        Vector3 randomPosition = centerPosition + new Vector3(
-            Mathf.Cos(randomAngle) * randomRadius,
-            0,
-            Mathf.Sin(randomAngle) * randomRadius
-        );
-        
-        // Sample vị trí trên NavMesh
-        if (NavMesh.SamplePosition(randomPosition, out NavMeshHit hit, navMeshSampleDistance, NavMesh.AllAreas))
+        // Nếu không tìm được, thử tìm ở 4 góc của vùng Stay
+        Vector3[] corners = new Vector3[]
         {
-            return hit.position;
+            centerPosition + new Vector3(halfWidthStay, 0, halfLengthStay),
+            centerPosition + new Vector3(-halfWidthStay, 0, halfLengthStay),
+            centerPosition + new Vector3(halfWidthStay, 0, -halfLengthStay),
+            centerPosition + new Vector3(-halfWidthStay, 0, -halfLengthStay)
+        };
+        
+        foreach (var corner in corners)
+        {
+            if (NavMesh.SamplePosition(corner, out NavMeshHit hit, navMeshSampleDistance, NavMesh.AllAreas))
+            {
+                if (npcTransform != null)
+                {
+                    NavMeshPath path = new NavMeshPath();
+                    if (NavMesh.CalculatePath(npcTransform.position, hit.position, NavMesh.AllAreas, path))
+                    {
+                        if (path.status == NavMeshPathStatus.PathComplete)
+                        {
+                            return hit.position;
+                        }
+                    }
+                }
+                else
+                {
+                    return hit.position;
+                }
+            }
         }
         
         return centerPosition;
@@ -86,26 +147,18 @@ public class DisplayArea : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         Vector3 pos = transform.position;
-        float radius = areaRadius;
         
-        // Nếu dùng collider bounds, vẽ theo bounds
-        if (useColliderBounds)
-        {
-            Collider col = GetComponent<Collider>();
-            if (col != null)
-            {
-                Vector3 size = col.bounds.size;
-                radius = Mathf.Max(size.x, size.z) * 0.5f + 1f;
-                
-                // Vẽ bounds của collider
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
-            }
-        }
-        
-        // Vẽ vòng tròn vùng NPC có thể đứng - màu xanh
+        // Vẽ vùng Stay (vùng lớn) - màu xanh lá (NPC có thể đứng)
         Gizmos.color = Color.green;
-        DrawCircle(pos, radius, 32);
+        DrawRectangle(pos, areaSizeStay);
+        
+        // Vẽ vùng Stop (vùng cấm) - màu đỏ (NPC không thể đứng)
+        Gizmos.color = Color.red;
+        DrawRectangle(pos, areaSizeStop);
+        
+        // Vẽ label
+        UnityEditor.Handles.Label(pos + new Vector3(areaSizeStay.x * 0.5f + 0.5f, 0, 0), "Stay Zone (Green)");
+        UnityEditor.Handles.Label(pos + new Vector3(areaSizeStop.x * 0.5f + 0.5f, 0.5f, 0), "Stop Zone (Red)");
         
         // Vẽ focus point
         if (focusPoint != null)
@@ -116,18 +169,20 @@ public class DisplayArea : MonoBehaviour
         }
     }
     
-    private void DrawCircle(Vector3 center, float radius, int segments)
+    private void DrawRectangle(Vector3 center, Vector2 size)
     {
-        for (int i = 0; i < segments; i++)
-        {
-            float angle1 = (i / (float)segments) * 360f * Mathf.Deg2Rad;
-            float angle2 = ((i + 1) / (float)segments) * 360f * Mathf.Deg2Rad;
-            
-            Vector3 p1 = center + new Vector3(Mathf.Cos(angle1) * radius, 0, Mathf.Sin(angle1) * radius);
-            Vector3 p2 = center + new Vector3(Mathf.Cos(angle2) * radius, 0, Mathf.Sin(angle2) * radius);
-            
-            Gizmos.DrawLine(p1, p2);
-        }
+        float halfWidth = size.x * 0.5f;
+        float halfLength = size.y * 0.5f;
+        
+        Vector3 p1 = center + new Vector3(-halfWidth, 0, -halfLength);
+        Vector3 p2 = center + new Vector3(halfWidth, 0, -halfLength);
+        Vector3 p3 = center + new Vector3(halfWidth, 0, halfLength);
+        Vector3 p4 = center + new Vector3(-halfWidth, 0, halfLength);
+        
+        Gizmos.DrawLine(p1, p2);
+        Gizmos.DrawLine(p2, p3);
+        Gizmos.DrawLine(p3, p4);
+        Gizmos.DrawLine(p4, p1);
     }
 #endif
 }

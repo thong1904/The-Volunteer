@@ -2,11 +2,18 @@ using UnityEngine;
 
 public class PlayerLook : MonoBehaviour
 {
+    public static PlayerLook Instance { get; private set; }
+    
     public Transform playerBody;
     public float sensitivity = 0.5f;
    
     float xRotation;
     public bool allowLook = true;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Update()
     {

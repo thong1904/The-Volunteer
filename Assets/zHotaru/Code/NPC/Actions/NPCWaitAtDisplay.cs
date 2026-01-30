@@ -4,7 +4,7 @@ using BehaviorDesigner.Runtime.Tasks;
 
 [TaskCategory("NPC")]
 [TaskName("Wait At Display")]
-[TaskDescription("NPC dừng lại để xem các vị trí trưng bày, có thể trigger câu hỏi khi player đến gần")]
+[TaskDescription("NPC dừng lại để xem các vị trí trưng bày, có thể hỏi câu hỏi nếu player ở gần")]
 public class NPCWaitAtDisplay : Action
 {
     private NPCBehaviorTree npcBehavior;
@@ -18,12 +18,17 @@ public class NPCWaitAtDisplay : Action
     [SerializeField] private string idleAnimationName = "Idle";
     [SerializeField] private float rotationSpeed = 5f;
     
-    [Header("Question Trigger (optional)")]
+    [Header("Question Settings")]
     [SerializeField] private string playerTag = "Player";
-    [SerializeField] private SharedBool shouldTriggerQuestion; // Output: true nếu cần chạy Question Event
+    [SerializeField] private float faceRotationSpeed = 8f;
+    [SerializeField] private float timeLimitSeconds = 15f;
+    [SerializeField] private int correctAnswerPoints = 10;
+    [SerializeField] private int wrongAnswerPoints = -5;
     
-    private bool questionRollPassed = false;
-    private bool questionAlreadyTriggered = false;
+    // State
+    private bool hasCheckedQuestion = false;
+    private bool isAskingQuestion = false;
+    private Transform playerTransform;
     
     public override void OnAwake()
     {
@@ -32,33 +37,26 @@ public class NPCWaitAtDisplay : Action
     
     public override void OnStart()
     {
-        string npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
-        
-        // Lựa chọn ngẫu nhiên thời gian chờ
         waitTime = Random.Range(minWaitTime, maxWaitTime);
         startTime = Time.time;
-        questionAlreadyTriggered = false;
+        hasCheckedQuestion = false;
+        isAskingQuestion = false;
+        playerTransform = null;
         
-        // Roll chance 1 lần khi bắt đầu wait (sử dụng QuestionChancePercent từ NPCBehaviorTree)
-        float chance = npcBehavior != null ? npcBehavior.QuestionChancePercent : 50f;
-        questionRollPassed = Random.value <= (chance * 0.01f);
-        
-        // Dừng di chuyển của NPC
-        Rigidbody rb = transform.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-        }
-        
-        // Phát animation idle
-        if (npcBehavior != null)
-            npcBehavior.PlayAnimation(idleAnimationName);
-        
-        // Đánh dấu NPC đang ở display
+        // Đánh dấu đang ở display
         if (npcBehavior != null)
             npcBehavior.IsAtDisplay = true;
         
-        // Tìm DisplayArea gần nhất để lấy focus point
+        // Dừng di chuyển
+        Rigidbody rb = transform.GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.linearVelocity = Vector3.zero;
+        
+        // Animation idle
+        if (npcBehavior != null)
+            npcBehavior.PlayAnimation(idleAnimationName);
+        
+        // Tìm DisplayArea gần nhất
         Collider[] colliders = Physics.OverlapSphere(transform.position, 5f);
         foreach (Collider collider in colliders)
         {
@@ -67,29 +65,48 @@ public class NPCWaitAtDisplay : Action
                 break;
         }
         
-        // Reset output
-        if (shouldTriggerQuestion != null)
-            shouldTriggerQuestion.Value = false;
-        
-        Debug.Log($"[NPCWaitAtDisplay] {npcName}: Đang xem trưng bày trong {waitTime:F2}s. Question roll: {(questionRollPassed ? "PASSED" : "failed")}");
+        string npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
+        Debug.Log($"[NPC] {npcName}: Bắt đầu xem display, chờ {waitTime:F1}s (startTime={startTime:F2})");
     }
     
     public override TaskStatus OnUpdate()
     {
         string npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
+        float elapsed = Time.time - startTime;
         
-        // Xoay NPC để nhìn vào focus point của display area
-        if (displayArea != null)
+        // === ĐANG HỎI CÂU HỎI ===
+        if (isAskingQuestion)
         {
-            Vector3 focusPoint = displayArea.GetFocusPoint();
-            Vector3 directionToFocus = (focusPoint - transform.position).normalized;
-            Quaternion targetRotation = Quaternion.LookRotation(directionToFocus);
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            // Xoay về phía player
+            if (playerTransform != null)
+            {
+                var toPlayer = playerTransform.position - transform.position;
+                toPlayer.y = 0f;
+                if (toPlayer.sqrMagnitude > 0.0001f)
+                {
+                    var targetRot = Quaternion.LookRotation(toPlayer.normalized);
+                    transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, faceRotationSpeed * Time.deltaTime);
+                }
+            }
+            
+            // Chờ UI xử lý xong
+            if (QuestionUIController.Instance != null && QuestionUIController.Instance.HasAnswered)
+            {
+                if (!QuestionUIController.Instance.IsShowing)
+                {
+                    isAskingQuestion = false;
+                    Debug.Log($"[NPC] {npcName}: Câu hỏi hoàn thành, đi display khác");
+                    return TaskStatus.Success;
+                }
+            }
+            return TaskStatus.Running;
         }
         
-        // Check nếu roll passed và chưa trigger, kiểm tra player có trong range không
-        if (questionRollPassed && !questionAlreadyTriggered)
+        // === KIỂM TRA CÓ NÊN HỎI KHÔNG (chỉ 1 lần khi bắt đầu) ===
+        if (!hasCheckedQuestion)
         {
+            hasCheckedQuestion = true;
+            
             var player = GameObject.FindGameObjectWithTag(playerTag);
             if (player != null)
             {
@@ -98,33 +115,131 @@ public class NPCWaitAtDisplay : Action
                 
                 if (distance <= triggerRadius)
                 {
-                    // Player đến gần! Trigger question event
-                    questionAlreadyTriggered = true;
-                    if (shouldTriggerQuestion != null)
-                        shouldTriggerQuestion.Value = true;
+                    // Player ở gần! Roll chance
+                    float chance = npcBehavior != null ? npcBehavior.QuestionChancePercent : 50f;
+                    bool rollPassed = Random.value <= (chance * 0.01f);
                     
-                    Debug.Log($"[NPCWaitAtDisplay] {npcName}: Player trong range ({distance:F2}m). Triggering question!");
-                    return TaskStatus.Success; // Kết thúc wait để chuyển sang Question Event
+                    if (rollPassed)
+                    {
+                        Debug.Log($"[NPC] {npcName}: Player ở gần ({distance:F1}m), hỏi câu hỏi!");
+                        playerTransform = player.transform;
+                        StartQuestion();
+                        // Chỉ tiếp tục nếu câu hỏi được hiển thị thành công
+                        if (isAskingQuestion)
+                            return TaskStatus.Running;
+                    }
+                    else
+                    {
+                        Debug.Log($"[NPC] {npcName}: Player ở gần nhưng roll failed");
+                    }
                 }
             }
         }
         
-        // Kiểm tra thời gian chờ
-        if (Time.time - startTime >= waitTime)
+        // === XEM DISPLAY BÌNH THƯỜNG ===
+        // Xoay NPC nhìn vào display
+        if (displayArea != null)
         {
-            Debug.Log($"[NPCWaitAtDisplay] {npcName}: Kết thúc xem trưng bày (hết thời gian)");
+            Vector3 focusPoint = displayArea.GetFocusPoint();
+            Vector3 dir = (focusPoint - transform.position).normalized;
+            if (dir.sqrMagnitude > 0.001f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(dir);
+                transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+            }
+        }
+        
+        // Hết thời gian chờ
+        if (elapsed >= waitTime)
+        {
+            Debug.Log($"[NPC] {npcName}: Hết thời gian xem display ({elapsed:F1}s >= {waitTime:F1}s), đi tiếp");
             return TaskStatus.Success;
         }
         
         return TaskStatus.Running;
     }
     
+    private void StartQuestion()
+    {
+        string npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
+        
+        // Animation wave
+        if (npcBehavior != null)
+            npcBehavior.PlayAnimation("Wave");
+        
+        // Tìm câu hỏi từ DisplayObject gần nhất
+        QuestionData question = null;
+        var displays = Object.FindObjectsByType<DisplayObject>(FindObjectsSortMode.None);
+        if (displays != null && displays.Length > 0)
+        {
+            DisplayObject nearest = null;
+            float bestDist = float.MaxValue;
+            foreach (var d in displays)
+            {
+                float dist = Vector3.Distance(transform.position, d.transform.position);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    nearest = d;
+                }
+            }
+            if (nearest != null)
+                question = nearest.GetRandomQuestion();
+        }
+        
+        if (question == null)
+        {
+            Debug.LogWarning($"[NPC] {npcName}: Không có câu hỏi!");
+            return;
+        }
+        
+        // Hiển thị UI
+        if (QuestionUIController.Instance != null)
+        {
+            QuestionUIController.Instance.ShowQuestion(
+                npcName,
+                question,
+                timeLimitSeconds,
+                (selectedIndex, isCorrect) => OnAnswerReceived(question, selectedIndex, isCorrect)
+            );
+            isAskingQuestion = true;
+            
+            // Phát âm thanh
+            if (npcBehavior != null)
+                npcBehavior.PlayQuestionSound();
+                
+            Debug.Log($"[NPC] {npcName}: Hiển thị câu hỏi - {question.questionText}");
+        }
+    }
+    
+    private void OnAnswerReceived(QuestionData question, int selectedIndex, bool isCorrect)
+    {
+        string npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
+        
+        // Phát âm thanh phản hồi
+        if (npcBehavior != null)
+        {
+            if (isCorrect)
+                npcBehavior.PlayCorrectAnswerSound();
+            else
+                npcBehavior.PlayWrongAnswerSound();
+        }
+        
+        // Tính điểm
+        int points = isCorrect ? correctAnswerPoints : wrongAnswerPoints;
+        if (question != null && isCorrect && question.pointsReward > 0)
+            points = question.pointsReward;
+        
+        // Cộng điểm
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.AddScore(points);
+        
+        Debug.Log($"[NPC] {npcName}: Trả lời {(isCorrect ? "ĐÚNG" : "SAI")}, điểm: {points}");
+    }
+    
     public override void OnEnd()
     {
         if (npcBehavior != null)
             npcBehavior.IsAtDisplay = false;
-        
-        string npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
-        Debug.Log($"[NPCWaitAtDisplay] {npcName}: OnEnd. shouldTriggerQuestion = {(shouldTriggerQuestion != null ? shouldTriggerQuestion.Value.ToString() : "null")}");
     }
 }
