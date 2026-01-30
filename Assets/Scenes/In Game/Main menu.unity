@@ -3174,7 +3174,7 @@ MonoBehaviour:
   dayNightManager: {fileID: 0}
   gameplayScenes:
   - Main menu
-  - Hotaru Test
+  - Main Game
 --- !u!4 &368035816
 Transform:
   m_ObjectHideFlags: 0
@@ -20676,7 +20676,7 @@ MonoBehaviour:
   settingsMenuVFX: {fileID: 1342195633}
   loadMenuVFX: {fileID: 233149317}
   logoTransition: {fileID: 346546262}
-  gameSceneName: Hotaru Test
+  gameSceneName: Main Game
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
