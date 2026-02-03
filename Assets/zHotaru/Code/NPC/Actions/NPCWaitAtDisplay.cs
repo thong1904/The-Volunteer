@@ -227,12 +227,17 @@ public class NPCWaitAtDisplay : Action
         
         // Tính điểm
         int points = isCorrect ? correctAnswerPoints : wrongAnswerPoints;
-        if (question != null && isCorrect && question.pointsReward > 0)
-            points = question.pointsReward;
         
-        // Cộng điểm
+        // Thêm tracking thống kê
         if (ScoreManager.Instance != null)
+        {
+            if (isCorrect)
+                ScoreManager.Instance.RecordCorrectAnswer();
+            else
+                ScoreManager.Instance.RecordWrongAnswer();
+                
             ScoreManager.Instance.AddScore(points);
+        }
         
         Debug.Log($"[NPC] {npcName}: Trả lời {(isCorrect ? "ĐÚNG" : "SAI")}, điểm: {points}");
     }

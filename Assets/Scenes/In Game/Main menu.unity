@@ -3171,7 +3171,6 @@ MonoBehaviour:
   saveLoadManager: {fileID: 1852655058}
   uiManager: {fileID: 0}
   scoreManager: {fileID: 1832935525}
-  dayNightManager: {fileID: 0}
   gameplayScenes:
   - Main menu
   - Main Game

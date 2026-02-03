@@ -160,14 +160,17 @@ public class NPCQuestionEvent : Action
         
         // Cập nhật điểm
         int points = isCorrect ? correctAnswerPoints : wrongAnswerPoints;
-        if (currentQuestion != null && isCorrect)
-        {
-            points = currentQuestion.pointsReward > 0 ? currentQuestion.pointsReward : correctAnswerPoints;
-        }
+        if (isCorrect && currentQuestion.pointsReward > 0)
+            points = currentQuestion.pointsReward;
         
         // Gọi ScoreManager để cộng/trừ điểm
         if (ScoreManager.Instance != null)
         {
+            if (isCorrect)
+                ScoreManager.Instance.RecordCorrectAnswer();
+            else
+                ScoreManager.Instance.RecordWrongAnswer();
+                
             ScoreManager.Instance.AddScore(points);
         }
         else

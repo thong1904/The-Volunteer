@@ -74,11 +74,8 @@ public class NPCBehaviorTree : MonoBehaviour
 
     void Update()
     {
-        // Kiểm tra nếu ngày kết thúc
-        if (DayNightManager.Instance != null && DayNightManager.Instance.IsNighttime())
-        {
-            isDayEnded = true;
-        }
+        // Bỏ phần check DayNightManager - không cần nữa
+        // NPC sẽ tự rời đi theo behavior tree của mình
     }
     
     public void SetTargetDisplayPosition()
@@ -165,9 +162,19 @@ public class NPCBehaviorTree : MonoBehaviour
             ? museumEntranceTransform.position 
             : museumEntrance;
         
-        // Tính vị trí exit phía ngoài entrance
-        Vector3 exitDirection = (entrancePos - transform.position).normalized;
-        currentTarget = entrancePos + exitDirection * 20f;
+        // Sample vị trí exit lên NavMesh để đảm bảo có thể di chuyển được
+        UnityEngine.AI.NavMeshHit hit;
+        if (UnityEngine.AI.NavMesh.SamplePosition(entrancePos, out hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            currentTarget = hit.position;
+            Debug.Log($"[NPC] {npcName}: SetExiting - Target đặt tại {currentTarget}");
+        }
+        else
+        {
+            // Fallback nếu không sample được
+            currentTarget = entrancePos;
+            Debug.LogWarning($"[NPC] {npcName}: SetExiting - Không sample được NavMesh, dùng entrance trực tiếp");
+        }
     }
     
     public void DespawnNPC()

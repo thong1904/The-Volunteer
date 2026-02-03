@@ -158,7 +158,7 @@ MonoBehaviour:
   minMuseumTime: 60
   maxMuseumTime: 120
   litterChance: 0
-  questionTriggerRadius: 15
+  questionTriggerRadius: 8
   questionChancePercent: 100
   showQuestionRadiusGizmo: 1
   behaviorTree: {fileID: 0}

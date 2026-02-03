@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.AI;
+using System;
 
 /// <summary>
 /// Quản lý spawn, pool và active NPCs (customer + optional support)
@@ -9,12 +10,12 @@ public class NPCManager : MonoBehaviour
 {
     [Header("NPC Settings")]
     [SerializeField] private List<GameObject> customerPrefabs = new List<GameObject>();
-    [SerializeField] private List<GameObject> supportPrefabs = new List<GameObject>(); // để trống nếu chưa dùng
+    [SerializeField] private List<GameObject> supportPrefabs = new List<GameObject>();
     [SerializeField] private Transform npcContainer;
     [SerializeField] private Transform entrancePoint;
     
     [Header("Spawn Points")]
-    [SerializeField] private List<Transform> spawnPoints = new List<Transform>(); // Các điểm spawn (nếu trống sẽ dùng entrancePoint)
+    [SerializeField] private List<Transform> spawnPoints = new List<Transform>();
     
     [Header("Display Discovery")]
     [SerializeField] private bool autoFindDisplays = true;
@@ -24,9 +25,12 @@ public class NPCManager : MonoBehaviour
     [SerializeField] private float customerSpawnInterval = 10f;
     [SerializeField] private float supportSpawnInterval = 15f;
     [SerializeField] private int initialMaxCustomers = 5;
-    [SerializeField] private int initialMaxSupport = 0;      // 0 nếu chưa bật support
+    [SerializeField] private int initialMaxSupport = 0;
     [SerializeField] private bool enableSupportSpawn = false;
-
+    
+    [Header("Day End Settings")]
+    [SerializeField] private int totalNPCsPerDay = 10; // Tổng số NPC sẽ spawn trong ngày
+    
     private readonly Dictionary<GameObject, Queue<GameObject>> pool = new Dictionary<GameObject, Queue<GameObject>>();
     private readonly List<GameObject> activeCustomers = new List<GameObject>();
     private readonly List<GameObject> activeSupport = new List<GameObject>();
@@ -37,18 +41,27 @@ public class NPCManager : MonoBehaviour
     private float nextSupportSpawnTime;
     private bool spawnCustomers;
     private bool spawnSupport;
+    
+    private int spawnedNPCCount; // Số NPC đã spawn trong ngày
+    private int despawnedNPCCount; // Số NPC đã rời đi trong ngày
 
     public int ActiveCustomerCount => activeCustomers.Count;
     public int ActiveSupportCount => activeSupport.Count;
     public int MaxCustomers => currentMaxCustomers;
     public int MaxSupport => currentMaxSupport;
+    public int TotalNPCsPerDay => totalNPCsPerDay;
+    public int SpawnedNPCCount => spawnedNPCCount;
+    public int DespawnedNPCCount => despawnedNPCCount;
+    
+    // Event khi tất cả NPC đã rời đi (kết thúc ngày)
+    public event Action OnAllNPCsLeft;
+    public event Action<int, int> OnNPCCountChanged; // (spawned, despawned)
 
     void Awake()
     {
         currentMaxCustomers = initialMaxCustomers;
         currentMaxSupport = initialMaxSupport;
         
-        // Tìm tất cả DisplayArea trong scene
         if (autoFindDisplays)
         {
             DisplayArea[] displays = FindObjectsByType<DisplayArea>(FindObjectsSortMode.None);
@@ -59,14 +72,15 @@ public class NPCManager : MonoBehaviour
             }
             Debug.Log($"[NPCManager] Found {cachedDisplays.Length} display areas");
         }
-        
-        // Không cần khởi tạo pool sớm - dùng lazy pooling
-        // NPC sẽ được tạo khi spawn và trở thành pool khi despawn
     }
 
     void Update()
     {
-        if (spawnCustomers && Time.time >= nextCustomerSpawnTime && activeCustomers.Count < currentMaxCustomers)
+        // Chỉ spawn nếu chưa đủ số NPC trong ngày
+        if (spawnCustomers && 
+            Time.time >= nextCustomerSpawnTime && 
+            activeCustomers.Count < currentMaxCustomers &&
+            spawnedNPCCount < totalNPCsPerDay)
         {
             SpawnCustomer();
             nextCustomerSpawnTime = Time.time + customerSpawnInterval;
@@ -79,14 +93,11 @@ public class NPCManager : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// Lấy vị trí spawn ngẫu nhiên từ spawnPoints hoặc entrancePoint
-    /// </summary>
     private Vector3 GetRandomSpawnPosition()
     {
         if (spawnPoints != null && spawnPoints.Count > 0)
         {
-            Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Count)];
+            Transform spawnPoint = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Count)];
             return spawnPoint != null ? spawnPoint.position : Vector3.zero;
         }
         else if (entrancePoint != null)
@@ -113,11 +124,11 @@ public class NPCManager : MonoBehaviour
 
     public void StopSupportSpawning() => spawnSupport = false;
 
-    public void SpawnCustomer() => SpawnFromList(customerPrefabs, activeCustomers);
+    public void SpawnCustomer() => SpawnFromList(customerPrefabs, activeCustomers, true);
 
-    public void SpawnSupport() => SpawnFromList(supportPrefabs, activeSupport);
+    public void SpawnSupport() => SpawnFromList(supportPrefabs, activeSupport, false);
 
-    private void SpawnFromList(List<GameObject> prefabs, List<GameObject> activeList)
+    private void SpawnFromList(List<GameObject> prefabs, List<GameObject> activeList, bool isCustomer)
     {
         if (prefabs == null || prefabs.Count == 0)
         {
@@ -125,7 +136,6 @@ public class NPCManager : MonoBehaviour
             return;
         }
 
-        // Chọn spawn point ngẫu nhiên
         Vector3 spawnPosition = GetRandomSpawnPosition();
         if (spawnPosition == Vector3.zero && entrancePoint == null && (spawnPoints == null || spawnPoints.Count == 0))
         {
@@ -133,15 +143,12 @@ public class NPCManager : MonoBehaviour
             return;
         }
 
-        // Chọn prefab ngẫu nhiên
-        GameObject prefab = prefabs[Random.Range(0, prefabs.Count)];
+        GameObject prefab = prefabs[UnityEngine.Random.Range(0, prefabs.Count)];
         
-        // Thử lấy từ pool (NPC đã despawn trước đó)
         GameObject npc = GetFromPool(prefab);
         
         if (npc == null)
         {
-            // Không có trong pool → tạo mới
             npc = Instantiate(prefab, spawnPosition, Quaternion.identity, npcContainer);
             Debug.Log($"[NPCManager] Tạo mới {npc.name}");
         }
@@ -150,7 +157,6 @@ public class NPCManager : MonoBehaviour
             Debug.Log($"[NPCManager] Tái sử dụng {npc.name} từ pool");
         }
 
-        // Reset NPC state trước khi spawn
         NPCBehaviorTree npcBehavior = npc.GetComponent<NPCBehaviorTree>();
         if (npcBehavior != null)
         {
@@ -159,11 +165,9 @@ public class NPCManager : MonoBehaviour
             npcBehavior.ResetState();
         }
 
-        // Đặt vị trí spawn
         npc.transform.position = spawnPosition;
         npc.transform.rotation = Quaternion.identity;
 
-        // Ensure agent is snapped to NavMesh
         var agent = npc.GetComponent<NavMeshAgent>();
         if (agent != null)
         {
@@ -177,17 +181,23 @@ public class NPCManager : MonoBehaviour
         npc.SetActive(true);
         activeList.Add(npc);
         
-        Debug.Log($"[NPCManager] Spawned {npc.name} at {spawnPosition}");
+        // Track spawned count cho customer
+        if (isCustomer)
+        {
+            spawnedNPCCount++;
+            OnNPCCountChanged?.Invoke(spawnedNPCCount, despawnedNPCCount);
+            Debug.Log($"[NPCManager] Spawned {npc.name} ({spawnedNPCCount}/{totalNPCsPerDay})");
+        }
     }
 
     public void DespawnNPC(GameObject npc)
     {
+        bool wasCustomer = activeCustomers.Contains(npc);
+        
         if (activeCustomers.Remove(npc) || activeSupport.Remove(npc))
         {
             npc.SetActive(false);
             
-            // Thêm vào pool để tái sử dụng sau
-            // Tìm prefab gốc dựa trên tên (loại bỏ "(Clone)")
             string npcName = npc.name.Replace("(Clone)", "").Trim();
             GameObject matchingPrefab = FindMatchingPrefab(npcName);
             
@@ -199,12 +209,35 @@ public class NPCManager : MonoBehaviour
                 pool[matchingPrefab].Enqueue(npc);
                 Debug.Log($"[NPCManager] {npc.name} đã được thêm vào pool");
             }
+            
+            // Track despawned count cho customer
+            if (wasCustomer)
+            {
+                despawnedNPCCount++;
+                OnNPCCountChanged?.Invoke(spawnedNPCCount, despawnedNPCCount);
+                Debug.Log($"[NPCManager] NPC rời đi ({despawnedNPCCount}/{spawnedNPCCount} đã spawn)");
+                
+                // Kiểm tra điều kiện kết thúc ngày:
+                // - Đã spawn đủ số NPC trong ngày
+                // - Tất cả NPC đã rời đi (không còn active)
+                CheckDayEnd();
+            }
         }
     }
     
     /// <summary>
-    /// Tìm prefab phù hợp dựa trên tên
+    /// Kiểm tra xem có nên kết thúc ngày không
     /// </summary>
+    private void CheckDayEnd()
+    {
+        // Điều kiện kết thúc: spawn đủ số lượng VÀ tất cả đã rời đi
+        if (spawnedNPCCount >= totalNPCsPerDay && activeCustomers.Count == 0)
+        {
+            Debug.Log($"[NPCManager] ✅ Tất cả {totalNPCsPerDay} NPC đã rời đi!");
+            OnAllNPCsLeft?.Invoke();
+        }
+    }
+    
     private GameObject FindMatchingPrefab(string npcName)
     {
         foreach (var prefab in customerPrefabs)
@@ -227,6 +260,17 @@ public class NPCManager : MonoBehaviour
         foreach (var npc in new List<GameObject>(activeSupport))
             DespawnNPC(npc);
     }
+    
+    /// <summary>
+    /// Reset counters cho ngày mới (được gọi từ GameManager.StartNewDay)
+    /// </summary>
+    public void ResetDayCounters()
+    {
+        spawnedNPCCount = 0;
+        despawnedNPCCount = 0;
+        OnNPCCountChanged?.Invoke(spawnedNPCCount, despawnedNPCCount);
+        Debug.Log("[NPCManager] Reset counters cho ngày mới");
+    }
 
     public void UpgradeMaxCustomers(int newLimit)
     {
@@ -241,13 +285,18 @@ public class NPCManager : MonoBehaviour
         currentMaxSupport = newLimit;
         Debug.Log($"[NPCManager] Max support upgraded to {currentMaxSupport}");
     }
+    
+    public void SetTotalNPCsPerDay(int count)
+    {
+        totalNPCsPerDay = count;
+        Debug.Log($"[NPCManager] Total NPCs per day set to {totalNPCsPerDay}");
+    }
 
     private GameObject GetFromPool(GameObject prefab)
     {
         if (!pool.ContainsKey(prefab) || pool[prefab].Count == 0)
             return null;
         
-        // Lấy NPC từ pool (đã inactive sẵn từ despawn)
         return pool[prefab].Dequeue();
     }
 }
