@@ -5,14 +5,15 @@ TagManager:
   serializedVersion: 3
   tags:
   - Trash
+  - TrashBin
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - NPC
+  - Trash
   - Water
   - UI
-  - 
+  - Interactable
   - 
   - 
   - 

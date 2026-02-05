@@ -9,13 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b3f8853772dbaa4eb2aa6466aaf121b, type: 3}
-  m_Name: New Trash Item SO 1
+  m_Script: {fileID: 11500000, guid: d1028c41a63f64148bef0c6f37ce5cb0, type: 3}
+  m_Name: trash
   m_EditorClassIdentifier: 
-  itemName: "r\xE1c"
+  trashName: hihi
   icon: {fileID: 21300000, guid: 40d2ba06bf64fff4bbf5894d9d44138d, type: 3}
-  basePrice: 4
-  category: 0
-  size: {x: 1, y: 2}
-  shapeMask: 0101
-  auraCells: []
+  price: 0
