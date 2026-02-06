@@ -14,7 +14,7 @@ public class SettingsUI : MonoBehaviour
     [SerializeField] private TMP_Text sensitivityValueText;
     [SerializeField] private float minSensitivity = 0.1f;
     [SerializeField] private float maxSensitivity = 5f;
-    [SerializeField] private float defaultSensitivity = 1f;
+    [SerializeField] private float defaultSensitivity = 0.5f;
 
     [Header("=== BGM Volume ===")]
     [SerializeField] private Slider bgmSlider;
@@ -64,6 +64,7 @@ public class SettingsUI : MonoBehaviour
         sensitivitySlider.value = MouseSensitivity;
 
         UpdateSensitivityText(MouseSensitivity);
+
 
         sensitivitySlider.onValueChanged.AddListener(OnSensitivityChanged);
     }

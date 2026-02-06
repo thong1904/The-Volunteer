@@ -27,6 +27,7 @@ public class PlayerScanSkill : MonoBehaviour
     public float ScanTimeRemaining => scanTimer;
     public float CooldownRemaining => cooldownTimer;
     public float ScanDuration => scanDuration;
+    public float ScanRadius => scanRadius;
     public float Cooldown => cooldown;
 
     public bool CanScan => !isScanning && !isCooldown;

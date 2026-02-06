@@ -30,6 +30,8 @@ public class PlayerController : MonoBehaviour
     [Header("Crouch")]
     public float standHeight = 1.8f;
     public float crouchHeight = 1.0f;
+    bool canLook = true;
+    bool canMove = true;
 
     CharacterController controller;
     TrashPickup currentTrash;
@@ -124,8 +126,10 @@ public class PlayerController : MonoBehaviour
 
     void HandleMove()
     {
-        float speed = walkSpeed;
+          if (Cursor.lockState != CursorLockMode.Locked)
+        return;
 
+        float speed = walkSpeed;
         if (isCrouching) speed = crouchSpeed;
         else if (isSprinting) speed = sprintSpeed;
 
@@ -133,24 +137,31 @@ public class PlayerController : MonoBehaviour
         controller.Move(move * speed * Time.deltaTime);
     }
 
+
     void HandleLook()
-    {
-        if (lookInput == Vector2.zero) return;
+{
+    // 🚫 Nếu đang mở UI (cursor unlocked) thì KHÔNG xoay camera
+    if (Cursor.lockState != CursorLockMode.Locked)
+        return;
 
-        float sensitivity =
-            Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero
-            ? mouseSensitivity
-            : gamepadSensitivity * Time.deltaTime;
+    if (lookInput == Vector2.zero) return;
 
-        float mouseX = lookInput.x * sensitivity;
-        float mouseY = lookInput.y * sensitivity;
+    float sensitivity =
+        Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero
+        ? mouseSensitivity
+        : gamepadSensitivity * Time.deltaTime;
 
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, minLookX, maxLookX);
+    float mouseX = lookInput.x * sensitivity;
+    float mouseY = lookInput.y * sensitivity;
 
-        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        transform.Rotate(Vector3.up * mouseX);
-    }
+    xRotation -= mouseY;
+    xRotation = Mathf.Clamp(xRotation, minLookX, maxLookX);
+
+    cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+    transform.Rotate(Vector3.up * mouseX);
+}
+
+
 
     void HandleGroundCheck()
     {
@@ -202,6 +213,19 @@ public class PlayerController : MonoBehaviour
                 PickupPromptUI.Instance.Show("E to sell");
                 return;
             }
+
+            // ===== SHOP =====
+            ShopInteract shop = hit.collider.GetComponentInParent<ShopInteract>();
+            if (shop != null)
+            {
+                ClearInteractState();
+
+                currentInteract = shop;
+
+                shop.ShowOutline();
+                PickupPromptUI.Instance.Show("E to open shop");
+                return;
+            }
         }
 
         ClearInteractState();
@@ -212,20 +236,20 @@ public class PlayerController : MonoBehaviour
     void ClearInteractState()
     {
         if (currentTrash != null)
-        {
-            currentTrash.ReleaseOutline(OutlineState.Interact);
-            currentTrash = null;
-        }
+            currentTrash.RequestOutline(OutlineState.None);
 
         if (currentBin != null)
-        {
             currentBin.HideOutline();
-            currentBin = null;
-        }
 
+        if (currentInteract is ShopInteract shop)
+            shop.HideOutline();
+
+        currentTrash = null;
+        currentBin = null;
         currentInteract = null;
+
         PickupPromptUI.Instance.Hide();
     }
-
+   
     #endregion
 }
