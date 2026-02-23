@@ -87,6 +87,12 @@ public class BuildModePlacer : MonoBehaviour
             return;
         }
         
+        // Không place nếu context menu đang mở
+        if (BuildModeContextMenu.Instance != null && BuildModeContextMenu.Instance.IsMenuOpen)
+        {
+            return;
+        }
+        
         if (Input.GetKeyDown(placeKey))
         {
             TryPlaceObject();
@@ -159,6 +165,10 @@ public class BuildModePlacer : MonoBehaviour
             }
 
             OnObjectPlaced?.Invoke(placedObject, buildableObject);
+            
+            // Clear selection sau khi đặt (single placement mode)
+            BuildModeObjectSelector.Instance.ClearSelection();
+            
             return true;
         }
 
@@ -192,6 +202,10 @@ public class BuildModePlacer : MonoBehaviour
             timestamp = Time.time
         };
         _placedObjects.Add(data);
+        
+        // Thêm marker để dễ detect
+        var marker = placedObject.AddComponent<PlacedObjectMarker>();
+        marker.Data = data;
 
         return placedObject;
     }
@@ -211,30 +225,11 @@ public class BuildModePlacer : MonoBehaviour
         
         if (Physics.Raycast(ray, out RaycastHit hit, 100f))
         {
-            // Tìm trong danh sách đã đặt
-            GameObject hitObject = hit.collider.gameObject;
-            
-            // Tìm root object (có thể hit vào child)
-            Transform root = hitObject.transform;
-            while (root.parent != null && root.parent != placedObjectsParent)
+            // Dùng PlacedObjectMarker để tìm object
+            var marker = PlacedObjectMarker.GetFromObject(hit.collider.gameObject);
+            if (marker != null && marker.Data != null)
             {
-                root = root.parent;
-            }
-
-            // Kiểm tra có phải object đã đặt không
-            PlacedObjectData foundData = null;
-            foreach (var data in _placedObjects)
-            {
-                if (data.gameObject == root.gameObject)
-                {
-                    foundData = data;
-                    break;
-                }
-            }
-
-            if (foundData != null)
-            {
-                RemoveObject(foundData);
+                RemoveObject(marker.Data);
                 return true;
             }
         }
