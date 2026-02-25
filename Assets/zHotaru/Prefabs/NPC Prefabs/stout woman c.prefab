@@ -46,6 +46,8 @@ GameObject:
   - component: {fileID: 8044363202635818661}
   - component: {fileID: -1240890702324533351}
   - component: {fileID: -57895404810081861}
+  - component: {fileID: -8341888954872880045}
+  - component: {fileID: -67635391428210870}
   m_Layer: 6
   m_Name: stout woman c
   m_TagString: Untagged
@@ -142,17 +144,16 @@ MonoBehaviour:
       parentIndex: 
       startIndex: 
       variableStartIndex: 
-      JSONSerialization: '{"EntryTask":{"Type":"BehaviorDesigner.Runtime.Tasks.EntryTask","NodeData":{"Offset":"(443.5,30)"},"ID":0,"Name":"Entry","Instant":true},"RootTask":{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(3.5,119.999992)"},"ID":1,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(3.49999428,118.297783)"},"ID":2,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckDayEnded","NodeData":{"Offset":"(-161.914871,120)"},"ID":3,"Name":"Check
-        Day Ended","Instant":true},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(156.69136,116.382988)"},"ID":4,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"NPCMoveToTargetNavMesh","NodeData":{"Offset":"(-174.8837,130)"},"ID":5,"Name":"Move
-        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk","SinglestuckCheckTime":2,"SingleminMoveDistance":0.1,"Int32maxPathRetries":3},{"Type":"SetEnteredMuseum","NodeData":{"Offset":"(0.1616211,134.5794)"},"ID":6,"Name":"Set
-        Entered Museum","Instant":true},{"Type":"BehaviorDesigner.Runtime.Tasks.Repeater","NodeData":{"Offset":"(135.281128,123.865105)"},"ID":7,"Name":"Repeater","Instant":true,"SharedIntcount":{"Type":"BehaviorDesigner.Runtime.SharedInt","Name":null,"Int32mValue":0},"SharedBoolrepeatForever":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true},"SharedBoolendOnFailure":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true},"Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(-4.28540039,115.238159)"},"ID":8,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-319.069244,129.7959)"},"ID":9,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckTimeToLeaveMuseum","NodeData":{"Offset":"(-100,130)"},"ID":10,"Name":"Check
-        Time To Leave","Instant":true},{"Type":"NPCLeaveMuseum","NodeData":{"Offset":"(92.38501,131.750061)"},"ID":11,"Name":"Leave
-        Museum","Instant":true,"SinglestoppingDistance":1,"StringwalkAnimationName":"walk"}]},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-1.90496826,128.095215)"},"ID":12,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckLittering","NodeData":{"Offset":"(-67.71912,128.960312)"},"ID":13,"Name":"Check
-        Littering","Instant":true},{"Type":"NPCLitteringBehavior","NodeData":{"Offset":"(71.28088,139.5853)"},"ID":14,"Name":"Littering
-        Behavior","Instant":true,"List`1trashPrefabs":[0,1,2,3,4],"TransformtrashSpawnPoint":5,"SinglespawnHeight":0.5,"SinglelitterCooldown":5}]},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(426.6666,128.095215)"},"ID":15,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"SetTargetDisplay","NodeData":{"Offset":"(-176.8317,134.870972)"},"ID":16,"Name":"Set
-        Target Display","Instant":true},{"Type":"NPCMoveToTargetNavMesh","NodeData":{"Offset":"(0,130)"},"ID":17,"Name":"Move
-        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk","SinglestuckCheckTime":2,"SingleminMoveDistance":0.1,"Int32maxPathRetries":3},{"Type":"NPCWaitAtDisplay","NodeData":{"Offset":"(171.155182,130.775757)"},"ID":18,"Name":"Wait
-        At Display","Instant":true,"SingleminWaitTime":3,"SinglemaxWaitTime":8,"StringidleAnimationName":"idle","SinglerotationSpeed":5,"StringplayerTag":"Player","SinglefaceRotationSpeed":8,"SingletimeLimitSeconds":15,"Int32correctAnswerPoints":10,"Int32wrongAnswerPoints":-5}]}]}]}]}]}]}}'
+      JSONSerialization: '{"EntryTask":{"Type":"BehaviorDesigner.Runtime.Tasks.EntryTask","NodeData":{"Offset":"(443.5,30)"},"ID":0,"Name":"Entry","Instant":true},"RootTask":{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(0.3970642,130.396973)"},"ID":1,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(3.89361572,113.572632)"},"ID":2,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckTimeToLeaveMuseum","NodeData":{"Offset":"(-66.10635,103.572632)"},"ID":3,"Name":"Check
+        Time To Leave","Instant":true},{"Type":"NPCLeaveMuseum","NodeData":{"Offset":"(73.8936157,103.572632)"},"ID":4,"Name":"Leave
+        Museum","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk"}]},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(353.893616,103.572647)"},"ID":5,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"NPCMoveToTargetNavMesh","NodeData":{"Offset":"(-126.106384,113.572632)"},"ID":6,"Name":"Move
+        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk","SinglestuckCheckTime":2,"SingleminMoveDistance":0.1,"Int32maxPathRetries":3},{"Type":"SetEnteredMuseum","NodeData":{"Offset":"(3.89361572,113.572632)"},"ID":7,"Name":"Set
+        Entered Museum","Instant":true},{"Type":"BehaviorDesigner.Runtime.Tasks.Repeater","NodeData":{"Offset":"(123.893677,103.572632)"},"ID":8,"Name":"Repeater","Instant":true,"SharedIntcount":{"Type":"BehaviorDesigner.Runtime.SharedInt","Name":null,"Int32mValue":0},"SharedBoolrepeatForever":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true},"SharedBoolendOnFailure":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true},"Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(173.893616,113.572632)"},"ID":9,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"SetTargetDisplay","NodeData":{"Offset":"(-126.106384,103.572632)"},"ID":10,"Name":"Set
+        Target Display","Instant":true},{"Type":"NPCMoveToTargetNavMesh","NodeData":{"Offset":"(13.8936157,103.572632)"},"ID":11,"Name":"Move
+        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk","SinglestuckCheckTime":2,"SingleminMoveDistance":0.1,"Int32maxPathRetries":3},{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(153.893616,113.572632)"},"ID":12,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-46.1063843,103.572632)"},"ID":13,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckLittering","NodeData":{"Offset":"(-56.1063843,103.572632)"},"ID":14,"Name":"Check
+        Littering","Instant":true},{"Type":"NPCLitteringBehavior","NodeData":{"Offset":"(63.8936157,113.572632)"},"ID":15,"Name":"Littering
+        Behavior","Instant":true,"List`1trashPrefabs":[0,1,2,3,4],"TransformtrashSpawnPoint":5,"SinglespawnHeight":0.5,"SinglelitterCooldown":5}]},{"Type":"NPCWaitAtDisplay","NodeData":{"Offset":"(103.893616,103.572632)"},"ID":16,"Name":"Wait
+        At Display","Instant":true,"SingleminWaitTime":3,"SinglemaxWaitTime":8,"StringidleAnimationName":"idle","SinglerotationSpeed":5,"StringplayerTag":"Player","SinglefaceRotationSpeed":8,"SingletimeLimitSeconds":15,"SingleinteractionWaitTime":10,"StringwaveAnimationName":"wave","Int32correctAnswerMoney":10,"Int32wrongAnswerMoney":0}]}]}]}]}]}}'
       fieldSerializationData:
         typeName: []
         fieldNameHash: 
@@ -189,6 +190,8 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  entranceAreaWidth: 10
+  entranceAreaDepth: 3
   museumEntrance: {x: 0, y: 0, z: 0}
   displayPositions: []
   movementSpeed: 3
@@ -317,6 +320,38 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5, y: 2, z: 0.5}
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &-8341888954872880045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3780867320958332371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a951380a1a1ac4d86741ad3064f2eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  promptMessage: E to talk
+  useOutline: 1
+--- !u!114 &-67635391428210870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3780867320958332371}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1001 &6740979818719993600
 PrefabInstance:
   m_ObjectHideFlags: 0

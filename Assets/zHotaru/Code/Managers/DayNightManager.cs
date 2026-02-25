@@ -61,9 +61,9 @@ public class DayNightManager : MonoBehaviour
     [SerializeField] private float reflectionNight = 0.1f;
     
     [Header("Thời điểm chuyển đổi (giờ)")]
-    [SerializeField] private float morningEnd = 9f;       // Kết thúc sáng sớm
+    [SerializeField] private float morningEnd = 6f;       // Kết thúc sáng sớm
     [SerializeField] private float afternoonEnd = 16f;    // Kết thúc trưa/chiều
-    [SerializeField] private float sunsetEnd = 19f;       // Kết thúc hoàng hôn
+    [SerializeField] private float sunsetEnd = 21f;       // Kết thúc hoàng hôn
 
     private float currentHour;
     private bool isRunning = false;  // Chỉ chạy khi StartDay() được gọi
@@ -339,7 +339,10 @@ public class DayNightManager : MonoBehaviour
     
     public bool IsTimeRunning() => isRunning;
     
-    public bool IsNighttime() => currentHour >= sunsetEnd;
+    /// <summary>
+    /// Trả về true khi đến giờ kết thúc ngày (endHour = 21h)
+    /// </summary>
+    public bool IsNighttime() => currentHour >= endHour;
     
     public bool IsDaytime() => currentHour >= morningEnd && currentHour < afternoonEnd;
     

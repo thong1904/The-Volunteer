@@ -190,7 +190,13 @@ public class GameManager : MonoBehaviour
     private void HandleAllNPCsLeft()
     {
         Debug.Log("[GameManager] Tất cả NPC đã rời đi!");
-        // Không tự động end day - chờ DayNightManager
+        
+        // Nếu đã nighttime (21h) → kết thúc ngày và hiện panel
+        if (DayNightManager.Instance != null && DayNightManager.Instance.IsNighttime())
+        {
+            Debug.Log("[GameManager] Đã nighttime - Kết thúc ngày!");
+            EndDay();
+        }
     }
     
     private void SubscribeToDayNight()
@@ -221,10 +227,20 @@ public class GameManager : MonoBehaviour
         if (npcManager != null)
         {
             npcManager.ForceAllNPCsToLeave();
+            
+            // Nếu không có NPC nào → EndDay ngay
+            if (npcManager.ActiveCustomerCount == 0)
+            {
+                Debug.Log("[GameManager] Không có NPC trong museum - EndDay ngay");
+                EndDay();
+            }
+            // Nếu có NPC → chờ họ rời đi hết (HandleAllNPCsLeft sẽ gọi EndDay)
         }
-        
-        // Kết thúc ngày
-        EndDay();
+        else
+        {
+            // Fallback nếu không có NPCManager
+            EndDay();
+        }
     }
     
     public void StartNewDay()

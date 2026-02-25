@@ -16,8 +16,10 @@ public class SetTargetDisplay : Action
     
     public override TaskStatus OnUpdate()
     {
+        if (npcBehavior != null && npcBehavior.IsDayEnded())
+            return TaskStatus.Failure;
+        
         npcBehavior.SetTargetDisplayPosition();
-        Debug.Log($"[NPC] {npcBehavior.NPCName}: Chọn display mới tại {npcBehavior.CurrentTarget}");
         return TaskStatus.Success;
     }
 }

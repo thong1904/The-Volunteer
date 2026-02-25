@@ -16,11 +16,12 @@ public class SetEnteredMuseum : Action
     
     public override TaskStatus OnUpdate()
     {
-        // Kiểm tra xem NPC đã gần đến bảo tàng chưa
+        if (npcBehavior != null && npcBehavior.IsDayEnded())
+            return TaskStatus.Failure;
+        
         if (Vector3.Distance(transform.position, npcBehavior.CurrentTarget) < 2f)
         {
             npcBehavior.SetEntered();
-            Debug.Log($"{npcBehavior.NPCName} đã vào bảo tàng!");
             return TaskStatus.Success;
         }
         

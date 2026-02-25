@@ -184,6 +184,11 @@ public class Outline : MonoBehaviour {
     // Retrieve or generate smooth normals
     foreach (var meshFilter in GetComponentsInChildren<MeshFilter>()) {
 
+      // Skip if mesh is not readable
+      if (meshFilter.sharedMesh == null || !meshFilter.sharedMesh.isReadable) {
+        continue;
+      }
+
       // Skip if smooth normals have already been adopted
       if (!registeredMeshes.Add(meshFilter.sharedMesh)) {
         continue;
@@ -207,6 +212,11 @@ public class Outline : MonoBehaviour {
     // Clear UV3 on skinned mesh renderers
     foreach (var skinnedMeshRenderer in GetComponentsInChildren<SkinnedMeshRenderer>()) {
 
+      // Skip if mesh is not readable
+      if (skinnedMeshRenderer.sharedMesh == null || !skinnedMeshRenderer.sharedMesh.isReadable) {
+        continue;
+      }
+
       // Skip if UV3 has already been reset
       if (!registeredMeshes.Add(skinnedMeshRenderer.sharedMesh)) {
         continue;
@@ -221,6 +231,11 @@ public class Outline : MonoBehaviour {
   }
 
   List<Vector3> SmoothNormals(Mesh mesh) {
+
+    // Return empty list if mesh is not readable
+    if (mesh == null || !mesh.isReadable) {
+      return new List<Vector3>();
+    }
 
     // Group vertices by location
     var groups = mesh.vertices.Select((vertex, index) => new KeyValuePair<Vector3, int>(vertex, index)).GroupBy(pair => pair.Key);

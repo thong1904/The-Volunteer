@@ -95,8 +95,12 @@ public class NPCManager : MonoBehaviour
 
     void Update()
     {
-        // Chỉ spawn nếu chưa đủ số NPC trong ngày
+        // Không spawn nếu DayNightManager đã sunset (hoặc đã nighttime)
+        bool isSunset = DayNightManager.Instance != null && DayNightManager.Instance.IsNighttime();
+        
+        // Chỉ spawn nếu chưa đủ số NPC trong ngày và chưa sunset
         if (spawnCustomers && 
+            !isSunset &&
             Time.time >= nextCustomerSpawnTime && 
             activeCustomers.Count < currentMaxCustomers &&
             spawnedNPCCount < totalNPCsPerDay)
@@ -107,7 +111,7 @@ public class NPCManager : MonoBehaviour
             currentCustomerSpawnInterval += spawnIntervalIncrease;
         }
 
-        if (enableSupportSpawn && spawnSupport && Time.time >= nextSupportSpawnTime && activeSupport.Count < currentMaxSupport)
+        if (enableSupportSpawn && spawnSupport && !isSunset && Time.time >= nextSupportSpawnTime && activeSupport.Count < currentMaxSupport)
         {
             SpawnSupport();
             nextSupportSpawnTime = Time.time + supportSpawnInterval;

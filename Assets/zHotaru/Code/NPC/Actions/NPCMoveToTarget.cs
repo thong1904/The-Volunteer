@@ -28,14 +28,9 @@ public class NPCMoveToTargetNavMesh : Action
         npcBehavior = GetComponent<NPCBehaviorTree>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         
-        if (navMeshAgent == null)
+        if (navMeshAgent != null)
         {
-            Debug.LogError($"{gameObject.name} không có NavMeshAgent! Thêm Component NavMeshAgent.");
-        }
-        else
-        {
-            // Tối ưu NavMeshAgent để NPC có thể xuyên qua nhau khi cần
-            navMeshAgent.avoidancePriority = Random.Range(0, 32); // Ưu tiên ngẫu nhiên để tránh deadlock
+            navMeshAgent.avoidancePriority = Random.Range(0, 32);
         }
     }
     
@@ -72,22 +67,27 @@ public class NPCMoveToTargetNavMesh : Action
         if (npcBehavior == null || navMeshAgent == null)
             return TaskStatus.Failure;
         
-        // Kiểm tra NPC có trên NavMesh không
+        // Ngày kết thúc → dừng ngay
+        if (npcBehavior.IsDayEnded())
+        {
+            if (navMeshAgent.isActiveAndEnabled)
+            {
+                navMeshAgent.velocity = Vector3.zero;
+                navMeshAgent.ResetPath();
+            }
+            return TaskStatus.Failure;
+        }
+        
         if (!navMeshAgent.isOnNavMesh)
         {
             if (!TryWarpToNavMesh())
-            {
-                Debug.LogWarning($"[NPC] {gameObject.name}: Không nằm trên NavMesh!");
                 return TaskStatus.Failure;
-            }
         }
         
         targetPosition = npcBehavior.CurrentTarget;
         
-        // Kiểm tra đã đến đích (target rất gần)
         if (Vector3.Distance(transform.position, targetPosition) < stoppingDistance)
         {
-            Debug.Log($"[NPC] {gameObject.name}: Đã đến đích (target gần)");
             navMeshAgent.velocity = Vector3.zero;
             navMeshAgent.ResetPath();
             return TaskStatus.Success;
@@ -114,38 +114,26 @@ public class NPCMoveToTargetNavMesh : Action
                     {
                         navMeshAgent.SetPath(path);
                         pathValid = true;
-                        Debug.Log($"[NPC] {gameObject.name}: Bắt đầu di chuyển đến {validTarget}");
                     }
                     else if (path.status == NavMeshPathStatus.PathPartial)
                     {
-                        // Path không hoàn chỉnh - thử chọn target mới
                         pathRetryCount++;
                         if (pathRetryCount >= maxPathRetries)
-                        {
-                            Debug.LogWarning($"[NPC] {gameObject.name}: Path partial sau {maxPathRetries} lần thử!");
                             return TaskStatus.Failure;
-                        }
-                        Debug.Log($"[NPC] {gameObject.name}: Path partial, chọn target mới (lần {pathRetryCount})");
                         npcBehavior.SetTargetDisplayPosition();
                         return TaskStatus.Running;
                     }
                     else
                     {
-                        // Không có path
                         pathRetryCount++;
                         if (pathRetryCount >= maxPathRetries)
-                        {
-                            Debug.LogWarning($"[NPC] {gameObject.name}: Không tìm được đường sau {maxPathRetries} lần thử!");
                             return TaskStatus.Failure;
-                        }
-                        Debug.Log($"[NPC] {gameObject.name}: Không có path, chọn target mới (lần {pathRetryCount})");
                         npcBehavior.SetTargetDisplayPosition();
                         return TaskStatus.Running;
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"[NPC] {gameObject.name}: Không thể tính toán path!");
                     pathRetryCount++;
                     if (pathRetryCount >= maxPathRetries)
                         return TaskStatus.Failure;
@@ -158,14 +146,12 @@ public class NPCMoveToTargetNavMesh : Action
         // Kiểm tra xem đã đến đích hay chưa
         if (!navMeshAgent.pathPending && pathValid)
         {
-            // Kiểm tra đã đến đích
             if (navMeshAgent.remainingDistance <= stoppingDistance && !navMeshAgent.pathPending)
             {
                 if (navMeshAgent.velocity.sqrMagnitude < 0.01f)
                 {
                     navMeshAgent.velocity = Vector3.zero;
                     navMeshAgent.ResetPath();
-                    Debug.Log($"[NPC] {gameObject.name}: Đã đến đích");
                     return TaskStatus.Success;
                 }
             }
@@ -180,12 +166,10 @@ public class NPCMoveToTargetNavMesh : Action
                     pathRetryCount++;
                     if (pathRetryCount >= maxPathRetries)
                     {
-                        Debug.LogWarning($"[NPC] {gameObject.name}: Bị kẹt sau {maxPathRetries} lần thử!");
                         navMeshAgent.ResetPath();
                         return TaskStatus.Failure;
                     }
                     
-                    Debug.Log($"[NPC] {gameObject.name}: Bị kẹt, chọn target mới (lần {pathRetryCount})");
                     navMeshAgent.ResetPath();
                     pathValid = false;
                     npcBehavior.SetTargetDisplayPosition();

@@ -16,10 +16,9 @@ GameObject:
   - component: {fileID: 8015589254411782619}
   - component: {fileID: 7380212231260322239}
   - component: {fileID: 2073493788881959951}
-  - component: {fileID: 4802315005530576807}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -34,8 +33,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 6.53, y: 1.23, z: 6.6}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3687600154909918624}
   m_Father: {fileID: 0}
@@ -341,19 +340,6 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!114 &4802315005530576807
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 507145857203947504}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b5d3868ea9b40744a9cf4ec960d9b8f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  money: 0
 --- !u!1 &1092516021011221411
 GameObject:
   m_ObjectHideFlags: 0

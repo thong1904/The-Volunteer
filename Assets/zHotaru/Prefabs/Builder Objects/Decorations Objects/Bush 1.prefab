@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1910764362363210854}
   - component: {fileID: 7982992124143330987}
   - component: {fileID: 1988217024581338803}
+  - component: {fileID: 6851460390168051948}
   m_Layer: 0
   m_Name: Bush 1
   m_TagString: Untagged
@@ -29,8 +30,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 44.696182, y: 0.0025908742, z: 28.782042}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -109,3 +110,19 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2819199055933476238, guid: bdee87cf91027534796510c30f2860cb, type: 3}
+--- !u!208 &6851460390168051948
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1855205143527383487}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.744, y: 0.33800003, z: 0.53300005}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: -0.059000004, y: 0.335, z: 0.042000003}
+  m_TimeToStationary: 0.5

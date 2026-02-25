@@ -272,6 +272,7 @@ GameObject:
   - component: {fileID: 3716775720475345260}
   - component: {fileID: 4732532491338099166}
   - component: {fileID: 337517567605738024}
+  - component: {fileID: 6577092657718934261}
   m_Layer: 0
   m_Name: SM_Large_Display_Case_low
   m_TagString: Untagged
@@ -368,6 +369,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 157.87244, y: 299.9752, z: 157.98462}
   m_Center: {x: -78.93623, y: 149.9876, z: 78.99231}
+--- !u!208 &6577092657718934261
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3782170177450678644}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 78.936005, y: 149.988, z: 78.992004}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
+  m_Center: {x: -78.936005, y: 149.988, z: 78.992004}
+  m_TimeToStationary: 0.5
 --- !u!1 &5220042979757061538
 GameObject:
   m_ObjectHideFlags: 0

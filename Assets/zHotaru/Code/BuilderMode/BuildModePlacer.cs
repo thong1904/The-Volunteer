@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
-using Unity.AI.Navigation;
+using UnityEngine.AI;
 
 /// <summary>
 /// BuildModePlacer - Xử lý việc đặt object thật trong Build Mode
@@ -24,10 +24,11 @@ public class BuildModePlacer : MonoBehaviour
     [SerializeField] private AudioClip removeSound;
     [SerializeField] private AudioClip errorSound;
     
-    [Header("NavMesh")]
-    [Tooltip("NavMeshSurface để rebake khi đặt/xóa object")]
-    [SerializeField] private NavMeshSurface navMeshSurface;
-    [SerializeField] private bool rebakeNavMeshOnChange = true;
+    [Header("NavMesh Obstacle")]
+    [Tooltip("Tự động thêm NavMeshObstacle vào object được đặt")]
+    [SerializeField] private bool autoAddNavMeshObstacle = true;
+    [SerializeField] private bool carveObstacle = true;
+    [SerializeField] private float carveTimeToStationary = 0.5f;
     
     [Header("Debug")]
     [SerializeField] private bool logPlacements = true;
@@ -193,9 +194,6 @@ public class BuildModePlacer : MonoBehaviour
 
             OnObjectPlaced?.Invoke(placedObject, buildableObject);
             
-            // Rebake NavMesh để NPC tránh vật thể mới
-            RebakeNavMesh();
-            
             // Clear selection sau khi đặt (single placement mode)
             BuildModeObjectSelector.Instance.ClearSelection();
             
@@ -251,8 +249,97 @@ public class BuildModePlacer : MonoBehaviour
                 npcManager.RefreshDisplayCache();
             }
         }
+        
+        // Tự động thêm NavMeshObstacle để NPC tránh vật thể
+        if (autoAddNavMeshObstacle)
+        {
+            AddNavMeshObstacle(placedObject);
+        }
 
         return placedObject;
+    }
+    
+    /// <summary>
+    /// Tự động thêm NavMeshObstacle vào object nếu chưa có
+    /// </summary>
+    private void AddNavMeshObstacle(GameObject obj)
+    {
+        // Kiểm tra xem đã có NavMeshObstacle chưa
+        var existingObstacle = obj.GetComponent<NavMeshObstacle>();
+        if (existingObstacle != null)
+        {
+            // Đảm bảo carve được bật
+            existingObstacle.carving = carveObstacle;
+            if (logPlacements) Debug.Log($"<color=cyan>[BuildModePlacer]</color> NavMeshObstacle đã có sẵn: {obj.name}");
+            return;
+        }
+        
+        // Tính toán bounds của object
+        Bounds bounds = CalculateObjectBounds(obj);
+        if (bounds.size == Vector3.zero)
+        {
+            if (logPlacements) Debug.LogWarning($"<color=yellow>[BuildModePlacer]</color> Không thể tính bounds cho: {obj.name}");
+            return;
+        }
+        
+        // Thêm NavMeshObstacle
+        var obstacle = obj.AddComponent<NavMeshObstacle>();
+        obstacle.carving = carveObstacle;
+        obstacle.carveOnlyStationary = true;
+        obstacle.carvingTimeToStationary = carveTimeToStationary;
+        obstacle.carvingMoveThreshold = 0.1f;
+        
+        // Tính size và center dựa trên bounds
+        obstacle.size = bounds.size;
+        obstacle.center = obj.transform.InverseTransformPoint(bounds.center);
+        
+        if (logPlacements) Debug.Log($"<color=green>[BuildModePlacer]</color> Đã thêm NavMeshObstacle: {obj.name} (size: {bounds.size})");
+    }
+    
+    /// <summary>
+    /// Tính toán bounds của object dựa trên tất cả colliders/renderers
+    /// </summary>
+    private Bounds CalculateObjectBounds(GameObject obj)
+    {
+        Bounds bounds = new Bounds(obj.transform.position, Vector3.zero);
+        bool hasBounds = false;
+        
+        // Lấy bounds từ Colliders
+        var colliders = obj.GetComponentsInChildren<Collider>();
+        foreach (var col in colliders)
+        {
+            if (col.isTrigger) continue; // Bỏ qua trigger
+            
+            if (!hasBounds)
+            {
+                bounds = col.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(col.bounds);
+            }
+        }
+        
+        // Nếu không có collider, lấy từ Renderers
+        if (!hasBounds)
+        {
+            var renderers = obj.GetComponentsInChildren<Renderer>();
+            foreach (var rend in renderers)
+            {
+                if (!hasBounds)
+                {
+                    bounds = rend.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(rend.bounds);
+                }
+            }
+        }
+        
+        return bounds;
     }
 
     /// <summary>
@@ -337,9 +424,6 @@ public class BuildModePlacer : MonoBehaviour
 
         OnObjectRemoved?.Invoke(data.gameObject);
         
-        // Rebake NavMesh sau khi xóa vật thể
-        RebakeNavMesh();
-        
         Destroy(data.gameObject);
     }
 
@@ -386,30 +470,6 @@ public class BuildModePlacer : MonoBehaviour
 
         PlacedObjectData lastData = _placedObjects[_placedObjects.Count - 1];
         RemoveObject(lastData);
-    }
-
-    /// <summary>
-    /// Rebake NavMesh để NPC tránh vật thể mới đặt/xóa
-    /// </summary>
-    private void RebakeNavMesh()
-    {
-        if (!rebakeNavMeshOnChange) return;
-        
-        // Tự động tìm NavMeshSurface nếu chưa gán
-        if (navMeshSurface == null)
-        {
-            navMeshSurface = FindFirstObjectByType<NavMeshSurface>();
-        }
-        
-        if (navMeshSurface != null)
-        {
-            navMeshSurface.BuildNavMesh();
-            if (logPlacements) Debug.Log("<color=cyan>[BuildModePlacer]</color> NavMesh đã được rebake");
-        }
-        else
-        {
-            if (logPlacements) Debug.LogWarning("<color=yellow>[BuildModePlacer]</color> Không tìm thấy NavMeshSurface để rebake");
-        }
     }
 
     private void PlaySound(AudioClip clip)

@@ -277,10 +277,33 @@ public class BuildModePreview : MonoBehaviour
                 {
                     _isPlacementValid = false;
                 }
+                
+                // Kiểm tra NoBuildZone - vùng cấm đặt
+                if (_isPlacementValid && IsInNoBuildZone(position))
+                {
+                    _isPlacementValid = false;
+                }
             }
         }
         
         UpdatePreviewColor();
+    }
+    
+    /// <summary>
+    /// Kiểm tra xem vị trí có nằm trong vùng cấm đặt không
+    /// </summary>
+    private bool IsInNoBuildZone(Vector3 position)
+    {
+        // Lấy bounds của preview
+        Bounds previewBounds = GetPreviewBounds();
+        if (previewBounds.size == Vector3.zero)
+        {
+            // Nếu không có bounds, kiểm tra chỉ điểm center
+            return NoBuildZone.IsPointInAnyNoBuildZone(position);
+        }
+        
+        // Kiểm tra bounds có giao với NoBuildZone nào không
+        return NoBuildZone.DoesBoundsIntersectAnyNoBuildZone(previewBounds);
     }
     
     /// <summary>

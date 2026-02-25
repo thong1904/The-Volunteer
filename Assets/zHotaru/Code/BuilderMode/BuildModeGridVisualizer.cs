@@ -144,8 +144,18 @@ public class BuildModeGridVisualizer : MonoBehaviour
                 
                 if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, maxRayDistance, validPlacementLayer))
                 {
-                    _heightCache[i, j] = hit.point.y + gridHeightOffset;
-                    _validCache[i, j] = true;
+                    // Kiểm tra xem điểm này có nằm trong vùng cấm không
+                    Vector3 hitPoint = hit.point;
+                    if (NoBuildZone.IsPointInAnyNoBuildZone(hitPoint))
+                    {
+                        // Nằm trong vùng cấm -> không hiện grid
+                        _validCache[i, j] = false;
+                    }
+                    else
+                    {
+                        _heightCache[i, j] = hit.point.y + gridHeightOffset;
+                        _validCache[i, j] = true;
+                    }
                 }
                 else
                 {

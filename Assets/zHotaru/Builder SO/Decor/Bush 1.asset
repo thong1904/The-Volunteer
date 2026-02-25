@@ -21,4 +21,4 @@ MonoBehaviour:
   placementOffset: {x: 0, y: 0, z: 0}
   alignToGround: 1
   gridFootprint: {x: 1, y: 1}
-  category: 0
+  category: 2

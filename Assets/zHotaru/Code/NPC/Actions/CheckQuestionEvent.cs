@@ -23,43 +23,28 @@ public class CheckQuestionEvent : Conditional
     
     public override TaskStatus OnUpdate()
     {
-        string npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
+        // Ngày kết thúc → không hỏi câu hỏi
+        if (npcBehavior != null && npcBehavior.IsDayEnded())
+            return TaskStatus.Failure;
+        
         var player = GameObject.FindGameObjectWithTag(playerTag);
         if (player == null)
-        {
-            Debug.Log($"[CheckQuestionEvent] {npcName}: No GameObject with tag '{playerTag}' found.");
             return TaskStatus.Failure;
-        }
         
-        // Use per-NPC settings from NPCBehaviorTree when available
         float effectiveRadius = npcBehavior != null ? npcBehavior.QuestionTriggerRadius : triggerRadius;
         float effectiveChance = npcBehavior != null ? npcBehavior.QuestionChancePercent : chancePercent;
 
         var distance = Vector3.Distance(transform.position, player.transform.position);
         if (distance > effectiveRadius)
-        {
-            Debug.Log($"[CheckQuestionEvent] {npcName}: Player distance {distance:F2} > triggerRadius {effectiveRadius:F2}.");
             return TaskStatus.Failure;
-        }
         
         if (requireIsAtDisplay && (isAtDisplay == null || !isAtDisplay.Value))
-        {
-            Debug.Log($"[CheckQuestionEvent] {npcName}: requireIsAtDisplay is true but isAtDisplay missing or false.");
             return TaskStatus.Failure;
-        }
         
-        // Xác suất xảy ra sự kiện
-        if (effectiveChance < 100f)
-        {
-            if (Random.value > (effectiveChance * 0.01f))
-            {
-                Debug.Log($"[CheckQuestionEvent] {npcName}: Chance roll failed ({effectiveChance}%).");
-                return TaskStatus.Failure;
-            }
-        }
+        // Xác suất
+        if (effectiveChance < 100f && Random.value > (effectiveChance * 0.01f))
+            return TaskStatus.Failure;
         
-        // If we passed all checks and random roll, trigger the event
-        Debug.Log($"[CheckQuestionEvent] {npcName}: Conditions met. Triggering question event.");
         return TaskStatus.Success;
     }
 

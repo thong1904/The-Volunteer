@@ -17,6 +17,10 @@ public class NPCBehaviorTree : MonoBehaviour
     [SerializeField] private Transform museumEntranceTransform;
     [SerializeField] private Transform[] displayTransforms; // Transform các khu trưng bày
     
+    [Header("Entrance Area (để NPC không bị kẹt khi rời đi)")]
+    [SerializeField] private float entranceAreaWidth = 10f;  // Chiều rộng vùng entrance
+    [SerializeField] private float entranceAreaDepth = 3f;   // Chiều sâu vùng entrance
+    
     // Fallback for old Vector3 system (kept for backward compatibility)
     [SerializeField] private Vector3 museumEntrance;
     [SerializeField] private Vector3[] displayPositions;
@@ -43,6 +47,7 @@ public class NPCBehaviorTree : MonoBehaviour
     private bool isInMuseum = false;
     private bool isDayEnded = false;
     private bool isAtDisplay = false;
+    private bool hasTriggeredExit = false;  // Đảm bảo chỉ reset BT 1 lần
     private float museumExitTime;
     private Animator animator;
     
@@ -69,7 +74,36 @@ public class NPCBehaviorTree : MonoBehaviour
         else
             currentTarget = museumEntrance;
             
-        museumExitTime = Random.Range(minMuseumTime, maxMuseumTime);
+        // Đặt thời gian rời bảo tàng là thời điểm tương lai (Time.time + duration)
+        museumExitTime = Time.time + Random.Range(minMuseumTime, maxMuseumTime);
+        
+        // Subscribe vào event OnSunset để tự động rời bảo tàng khi hết ngày
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.OnSunset += OnSunsetTriggered;
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Unsubscribe event khi NPC bị destroy
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.OnSunset -= OnSunsetTriggered;
+        }
+    }
+    
+    /// <summary>
+    /// Được gọi khi DayNightManager fire event OnSunset
+    /// </summary>
+    private void OnSunsetTriggered()
+    {
+        // Tất cả NPC đều rời đi khi sunset, bất kể đã vào museum hay chưa
+        if (!hasTriggeredExit)
+        {
+            Debug.Log($"[NPC] {npcName}: Sunset triggered - bắt đầu rời bảo tàng");
+            SetExiting();
+        }
     }
 
     void Update()
@@ -174,25 +208,70 @@ public class NPCBehaviorTree : MonoBehaviour
     
     public void SetExiting()
     {
-        isInMuseum = false;
+        // Chỉ thực hiện 1 lần
+        if (hasTriggeredExit) return;
+        hasTriggeredExit = true;
         
-        // Lấy vị trí entrance
-        Vector3 entrancePos = museumEntranceTransform != null 
+        isInMuseum = false;
+        isDayEnded = true;
+        
+        // Lấy vị trí entrance center
+        Vector3 entranceCenter = museumEntranceTransform != null 
             ? museumEntranceTransform.position 
             : museumEntrance;
         
-        // Sample vị trí exit lên NavMesh để đảm bảo có thể di chuyển được
-        UnityEngine.AI.NavMeshHit hit;
-        if (UnityEngine.AI.NavMesh.SamplePosition(entrancePos, out hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+        // Tính vị trí ngẫu nhiên trong vùng entrance để NPC không bị kẹt
+        Vector3 randomOffset = new Vector3(
+            Random.Range(-entranceAreaWidth / 2f, entranceAreaWidth / 2f),
+            0f,
+            Random.Range(-entranceAreaDepth / 2f, entranceAreaDepth / 2f)
+        );
+        
+        // Nếu có transform, dùng local direction
+        Vector3 targetPos;
+        if (museumEntranceTransform != null)
         {
-            currentTarget = hit.position;
-            Debug.Log($"[NPC] {npcName}: SetExiting - Target đặt tại {currentTarget}");
+            targetPos = entranceCenter 
+                + museumEntranceTransform.right * randomOffset.x 
+                + museumEntranceTransform.forward * randomOffset.z;
         }
         else
         {
-            // Fallback nếu không sample được
-            currentTarget = entrancePos;
-            Debug.LogWarning($"[NPC] {npcName}: SetExiting - Không sample được NavMesh, dùng entrance trực tiếp");
+            targetPos = entranceCenter + randomOffset;
+        }
+        
+        // Sample vị trí lên NavMesh
+        UnityEngine.AI.NavMeshHit hit;
+        if (UnityEngine.AI.NavMesh.SamplePosition(targetPos, out hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            currentTarget = hit.position;
+        }
+        else if (UnityEngine.AI.NavMesh.SamplePosition(entranceCenter, out hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            // Fallback về center nếu random position không valid
+            currentTarget = hit.position;
+        }
+        else
+        {
+            currentTarget = entranceCenter;
+        }
+        
+        // Restart behavior tree 1 lần duy nhất
+        RestartBehaviorTree();
+    }
+    
+    /// <summary>
+    /// Restart behavior tree để buộc NPC đánh giá lại từ đầu
+    /// </summary>
+    private void RestartBehaviorTree()
+    {
+        if (behaviorTree == null)
+            behaviorTree = GetComponent<BehaviorTree>();
+        
+        if (behaviorTree != null)
+        {
+            behaviorTree.DisableBehavior();
+            behaviorTree.EnableBehavior();
         }
     }
     
@@ -214,7 +293,9 @@ public class NPCBehaviorTree : MonoBehaviour
     
     public bool ShouldLitter()
     {
-        return isInMuseum && Random.Range(0f, 100f) < litterChance;
+        // Không vứt rác nếu ngày đã kết thúc hoặc không ở trong bảo tàng
+        if (isDayEnded || !isInMuseum) return false;
+        return Random.Range(0f, 100f) < litterChance;
     }
     
     public bool IsTimeToLeaveMuseum()
@@ -224,6 +305,11 @@ public class NPCBehaviorTree : MonoBehaviour
     
     public bool IsDayEnded()
     {
+        // Check khi đến endHour (21h) - NPC sẽ rời đi
+        if (DayNightManager.Instance != null && DayNightManager.Instance.IsNighttime())
+        {
+            return true;
+        }
         return isDayEnded;
     }
     
@@ -255,12 +341,22 @@ public class NPCBehaviorTree : MonoBehaviour
     {
         isInMuseum = false;
         isDayEnded = false;
-        museumExitTime = Random.Range(minMuseumTime, maxMuseumTime);
+        hasTriggeredExit = false;  // Reset flag để NPC có thể exit lại ở ngày mới
+        
+        // Đặt thời gian rời bảo tàng là thời điểm tương lai (Time.time + duration)
+        museumExitTime = Time.time + Random.Range(minMuseumTime, maxMuseumTime);
 
         // Reset target back to entrance so NPC walks in
         currentTarget = museumEntranceTransform != null
             ? museumEntranceTransform.position
             : museumEntrance;
+
+        // Subscribe lại vào event OnSunset (đề phòng trường hợp bị unsubscribe)
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.OnSunset -= OnSunsetTriggered; // Tránh duplicate
+            DayNightManager.Instance.OnSunset += OnSunsetTriggered;
+        }
 
         // Restart Behavior Designer tree cleanly
         if (behaviorTree == null)

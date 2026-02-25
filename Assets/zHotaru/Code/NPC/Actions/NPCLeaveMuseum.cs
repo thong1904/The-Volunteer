@@ -21,15 +21,8 @@ public class NPCLeaveMuseum : Action
         npcBehavior = GetComponent<NPCBehaviorTree>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         
-        if (navMeshAgent == null)
-        {
-            Debug.LogError($"{gameObject.name} không có NavMeshAgent! Thêm Component NavMeshAgent.");
-        }
-        else
-        {
-            // Tối ưu NavMeshAgent để NPC có thể xuyên qua nhau khi cần
+        if (navMeshAgent != null)
             navMeshAgent.avoidancePriority = Random.Range(0, 32);
-        }
     }
     
     public override void OnStart()
@@ -52,10 +45,7 @@ public class NPCLeaveMuseum : Action
             }
         }
         
-        // Phát animation walk
         npcBehavior.PlayAnimation(walkAnimationName);
-        
-        Debug.Log($"[NPC] {npcBehavior.NPCName}: Bắt đầu rời bảo tàng, target: {npcBehavior.CurrentTarget}");
     }
     
     private bool TryWarpToNavMesh()
@@ -64,7 +54,6 @@ public class NPCLeaveMuseum : Action
         if (NavMesh.SamplePosition(transform.position, out hit, 3f, NavMesh.AllAreas))
         {
             navMeshAgent.Warp(hit.position);
-            Debug.Log($"[NPC] {npcBehavior.NPCName}: Warp lên NavMesh tại {hit.position}");
             return true;
         }
         return false;
@@ -75,23 +64,17 @@ public class NPCLeaveMuseum : Action
         if (npcBehavior == null || navMeshAgent == null)
             return TaskStatus.Failure;
         
-        // Kiểm tra NPC có trên NavMesh không
         if (!navMeshAgent.isOnNavMesh)
         {
             if (!TryWarpToNavMesh())
-            {
-                Debug.LogWarning($"[NPC] {gameObject.name}: Không nằm trên NavMesh!");
                 return TaskStatus.Failure;
-            }
         }
         
         targetPosition = npcBehavior.CurrentTarget;
         
-        // Kiểm tra đã đến đích (target rất gần)
         float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
         if (distanceToTarget < stoppingDistance)
         {
-            Debug.Log($"[NPC] {npcBehavior.NPCName}: Đã đến entrance và despawn");
             navMeshAgent.velocity = Vector3.zero;
             navMeshAgent.ResetPath();
             npcBehavior.DespawnNPC();
@@ -116,30 +99,24 @@ public class NPCLeaveMuseum : Action
                 {
                     navMeshAgent.SetPath(path);
                     pathValid = true;
-                    Debug.Log($"[NPC] {npcBehavior.NPCName}: Bắt đầu di chuyển đến entrance {validTarget}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[NPC] {npcBehavior.NPCName}: Không tìm được đường đến entrance!");
-                    // Vẫn thử SetDestination trực tiếp
                     navMeshAgent.SetDestination(validTarget);
                     pathValid = true;
                 }
             }
             else
             {
-                // Fallback: SetDestination trực tiếp
                 navMeshAgent.SetDestination(validTarget);
                 pathValid = true;
             }
         }
         
-        // Kiểm tra xem đã đến đích hay chưa
         if (!navMeshAgent.pathPending && pathValid)
         {
             if (navMeshAgent.remainingDistance <= stoppingDistance && navMeshAgent.velocity.sqrMagnitude < 0.01f)
             {
-                Debug.Log($"[NPC] {npcBehavior.NPCName}: Đã đến entrance và despawn");
                 navMeshAgent.velocity = Vector3.zero;
                 navMeshAgent.ResetPath();
                 npcBehavior.DespawnNPC();
