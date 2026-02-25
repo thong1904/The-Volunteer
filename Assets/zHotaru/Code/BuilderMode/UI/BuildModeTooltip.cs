@@ -142,7 +142,14 @@ public class BuildModeTooltip : MonoBehaviour
         if (priceText != null)
         {
             priceText.text = string.Format(priceFormat, buildableObject.price);
-            priceText.color = affordableColor;
+            
+            // Kiểm tra đủ tiền không để đổi màu
+            bool canAfford = true;
+            if (MoneyManager.Instance != null)
+            {
+                canAfford = MoneyManager.Instance.GetTotalMoney() >= buildableObject.price;
+            }
+            priceText.color = canAfford ? affordableColor : expensiveColor;
         }
         
         Debug.Log($"<color=green>[BuildModeTooltip]</color> Activating tooltipPanel...");

@@ -255,6 +255,12 @@ public class BuildModeInventoryUI : MonoBehaviour
     {
         if (buildable == null) return;
         
+        // Không highlight UI khi đang trong Move mode
+        if (BuildModePlacer.Instance != null && BuildModePlacer.Instance.IsInMoveMode)
+        {
+            return;
+        }
+        
         // Tìm và highlight item trong UI
         ClearAllSelections();
         

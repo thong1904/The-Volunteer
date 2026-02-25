@@ -7,6 +7,7 @@ public class MoneyUI : MonoBehaviour
 
     void Update()
     {
-        text.text = PlayerMoney.Instance.money + "$";
+        if (MoneyManager.Instance != null)
+            text.text = MoneyManager.Instance.GetTotalMoney() + "$";
     }
 }

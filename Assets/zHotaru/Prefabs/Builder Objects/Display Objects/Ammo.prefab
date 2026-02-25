@@ -1956,8 +1956,70 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7087833928533607845, guid: 8e1d189bc17609247a3f7ced180736bc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5747738977618536762}
+    - targetCorrespondingSourceObject: {fileID: 7087833928533607845, guid: 8e1d189bc17609247a3f7ced180736bc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5798196655269891963}
   m_SourcePrefab: {fileID: 100100000, guid: 8e1d189bc17609247a3f7ced180736bc, type: 3}
+--- !u!1 &8129135535939848793 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7087833928533607845, guid: 8e1d189bc17609247a3f7ced180736bc, type: 3}
+  m_PrefabInstance: {fileID: 1336855319980412924}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5747738977618536762
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8129135535939848793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aff123a7c753934eb4fc283cfe72c77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: Ammo
+  questions:
+  - questionText: 
+    answers: []
+    correctAnswerIndex: 0
+    pointsReward: 0
+  - questionText: 
+    answers: []
+    correctAnswerIndex: 0
+    pointsReward: 0
+  - questionText: 
+    answers: []
+    correctAnswerIndex: 0
+    pointsReward: 0
+  - questionText: 
+    answers: []
+    correctAnswerIndex: 0
+    pointsReward: 0
+--- !u!114 &5798196655269891963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8129135535939848793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da83794bd4b8a15439be0b3aa278c121, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isBuilt: 0
+  isPresetDisplay: 0
+  outerRadius: 5
+  innerRadius: 1
+  useLocalForward: 1
+  halfCircleAngle: 180
+  navMeshSampleDistance: 5
+  maxRetryAttempts: 1
+  focusPoint: {fileID: 0}
 --- !u!4 &8906903039730995427 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7572481489125072671, guid: 8e1d189bc17609247a3f7ced180736bc, type: 3}

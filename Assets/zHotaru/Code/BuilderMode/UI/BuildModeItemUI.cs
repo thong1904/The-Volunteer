@@ -17,6 +17,8 @@ public class BuildModeItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [SerializeField] private Color borderNormalColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
     [SerializeField] private Color borderHoverColor = new Color(0.8f, 0.8f, 0.8f, 1f);
     [SerializeField] private Color borderSelectedColor = new Color(0.2f, 0.8f, 0.2f, 1f);
+    [SerializeField] private Color iconNormalColor = Color.white;
+    [SerializeField] private Color iconNotAffordableColor = new Color(1f, 0.3f, 0.3f, 0.7f); // Màu đỏ khi không đủ tiền
     
     [Header("Audio")]
     [SerializeField] private AudioClip hoverSound;
@@ -150,6 +152,13 @@ public class BuildModeItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (eventData.button != PointerEventData.InputButton.Left) return;
         
+        // Không cho chọn nếu không đủ tiền
+        if (!CanAfford())
+        {
+            Debug.Log($"<color=red>[BuildModeItemUI]</color> Không đủ tiền để chọn {_buildableObject?.objectName}");
+            return;
+        }
+        
         PlaySound(clickSound);
         
         // Chọn object trong BuildModeObjectSelector
@@ -183,6 +192,34 @@ public class BuildModeItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 borderImage.color = borderNormalColor;
             }
         }
+        
+        // Cập nhật màu icon dựa trên tiền
+        UpdateIconAffordability();
+    }
+    
+    /// <summary>
+    /// Cập nhật màu icon dựa trên khả năng mua
+    /// </summary>
+    private void UpdateIconAffordability()
+    {
+        if (iconImage == null || _buildableObject == null) return;
+        
+        bool canAfford = CanAfford();
+        iconImage.color = canAfford ? iconNormalColor : iconNotAffordableColor;
+    }
+    
+    /// <summary>
+    /// Kiểm tra có đủ tiền không
+    /// </summary>
+    private bool CanAfford()
+    {
+        if (_buildableObject == null) return false;
+        if (MoneyManager.Instance == null) return true; // Nếu không có MoneyManager thì cho phép
+        
+        // Nếu đang trong move mode thì luôn cho phép (vì không tốn tiền)
+        if (BuildModePlacer.Instance != null && BuildModePlacer.Instance.IsInMoveMode) return true;
+        
+        return MoneyManager.Instance.GetTotalMoney() >= _buildableObject.price;
     }
     
     private void PlaySound(AudioClip clip)

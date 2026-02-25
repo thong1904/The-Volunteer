@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8aa79291fa78c1149a418f1336c1e225, type: 3}
   m_Name: "Xe t\u0103ng"
   m_EditorClassIdentifier: 
+  objectId: DI7
   objectName: "Xe t\u0103ng"
   description: TANKKKK
   icon: {fileID: 0}
+  price: 100
   prefab: {fileID: 4975198229164005975, guid: f746c27f004b0464fa79d045b36290dd, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}
   alignToGround: 1
   gridFootprint: {x: 2, y: 3}
-  category: Default
+  category: 0

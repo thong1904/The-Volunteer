@@ -117,6 +117,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3004065230619208508}
+  - component: {fileID: 5512315510177097558}
+  - component: {fileID: 4774906321381821112}
   m_Layer: 0
   m_Name: Park-Sign1
   m_TagString: Untagged
@@ -141,6 +143,57 @@ Transform:
   - {fileID: 5236110334360664698}
   m_Father: {fileID: 8318187142612232732}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5512315510177097558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1236822355125912565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da83794bd4b8a15439be0b3aa278c121, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isBuilt: 0
+  isPresetDisplay: 0
+  outerRadius: 5
+  innerRadius: 1
+  useLocalForward: 1
+  halfCircleAngle: 180
+  navMeshSampleDistance: 5
+  maxRetryAttempts: 10
+  focusPoint: {fileID: 0}
+--- !u!114 &4774906321381821112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1236822355125912565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3aff123a7c753934eb4fc283cfe72c77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayName: "T\xEAn l\u1EEDa"
+  questions:
+  - questionText: 
+    answers: []
+    correctAnswerIndex: 0
+    pointsReward: 0
+  - questionText: 
+    answers: []
+    correctAnswerIndex: 0
+    pointsReward: 0
+  - questionText: 
+    answers: []
+    correctAnswerIndex: 0
+    pointsReward: 0
+  - questionText: 
+    answers: []
+    correctAnswerIndex: 0
+    pointsReward: 0
 --- !u!1 &6758229124796516379
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8aa79291fa78c1149a418f1336c1e225, type: 3}
   m_Name: RPG
   m_EditorClassIdentifier: 
+  objectId: DI3
   objectName: "S\xFAng ph\xF3ng l\u1EF1u"
   description: 
   icon: {fileID: 0}

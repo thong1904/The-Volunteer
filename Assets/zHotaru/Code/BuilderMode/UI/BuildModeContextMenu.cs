@@ -266,6 +266,9 @@ public class BuildModeContextMenu : MonoBehaviour
     {
         if (objectData == null || objectData.buildableObject == null) return;
         
+        // Bật move mode để không tốn tiền khi đặt lại
+        BuildModePlacer.Instance.SetMoveMode(true);
+        
         // Lưu lại object đang move
         var buildableObject = objectData.buildableObject;
         var oldPosition = objectData.position;
@@ -294,6 +297,9 @@ public class BuildModeContextMenu : MonoBehaviour
 
     private void OnMoveCompleted(GameObject newObject, BuildableObject buildable)
     {
+        // Tắt move mode
+        BuildModePlacer.Instance.SetMoveMode(false);
+        
         // Đặt thành công -> xóa object cũ
         if (_movingOldObject != null)
         {
@@ -310,6 +316,9 @@ public class BuildModeContextMenu : MonoBehaviour
 
     private void OnMoveCancelled(GameObject oldObject, BuildModePlacer.PlacedObjectData oldData)
     {
+        // Tắt move mode
+        BuildModePlacer.Instance.SetMoveMode(false);
+        
         // Hủy move -> hiện lại object cũ
         if (oldObject != null)
         {

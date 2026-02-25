@@ -13,8 +13,15 @@ public class MainGameButtons : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playTimeText;
     [SerializeField] private TextMeshProUGUI interactionsText;
     [SerializeField] private TextMeshProUGUI correctWrongText;
-    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI moneyText;
+    [SerializeField] private TextMeshProUGUI moneyEarnedText;
     [SerializeField] private Button nextDayButton;
+    
+    [Header("Scene Transition")]
+    [SerializeField] private LogoSceneTransition logoTransition;
+    
+    [Header("Player References")]
+    [SerializeField] private GameObject playerObject; // Player để disable/enable
 
     private bool isPanelVisible = false;
     
@@ -23,6 +30,17 @@ public class MainGameButtons : MonoBehaviour
 
     private void Start()
     {
+        // Auto-find references nếu chưa gán
+        if (logoTransition == null)
+            logoTransition = FindAnyObjectByType<LogoSceneTransition>();
+            
+        if (playerObject == null)
+        {
+            var player = FindAnyObjectByType<PlayerController>();
+            if (player != null)
+                playerObject = player.gameObject;
+        }
+        
         // Ẩn panel khi bắt đầu
         if (DayEndPanel != null)
             DayEndPanel.SetActive(false);
@@ -66,11 +84,11 @@ public class MainGameButtons : MonoBehaviour
         if (isPanelVisible) return;
         isPanelVisible = true;
 
-        // Lấy thống kê từ ScoreManager
+        // Lấy thống kê từ MoneyManager
         DayStatistics stats = new DayStatistics();
-        if (GameManager.Instance != null && GameManager.Instance.Score != null)
+        if (GameManager.Instance != null && GameManager.Instance.Money != null)
         {
-            stats = GameManager.Instance.Score.GetDayStatistics();
+            stats = GameManager.Instance.Money.GetDayStatistics();
         }
 
         // Cập nhật UI
@@ -121,8 +139,11 @@ public class MainGameButtons : MonoBehaviour
         if (correctWrongText != null)
             correctWrongText.text = $"Trả lời đúng: {stats.correctAnswers} - Sai: {stats.wrongAnswers}";
 
-        if (scoreText != null)
-            scoreText.text = $"Điểm: {stats.totalScore}";
+        if (moneyText != null)
+            moneyText.text = $"Tổng tiền: {stats.totalMoney}";
+            
+        if (moneyEarnedText != null)
+            moneyEarnedText.text = $"Kiếm được hôm nay: +{stats.moneyEarnedToday}";
     }
 
     /// <summary>
@@ -130,15 +151,109 @@ public class MainGameButtons : MonoBehaviour
     /// </summary>
     private void OnNextDayClicked()
     {
-        Debug.Log("[MainGameButtons] Next Day clicked - Chức năng chưa được implement");
+        Debug.Log("[MainGameButtons] Next Day clicked - Bắt đầu transition");
         
-        // TODO: Implement khi cần
-        // if (GameManager.Instance != null)
-        // {
-        //     if (GameManager.Instance.Score != null)
-        //         GameManager.Instance.Score.NextDay();
-        //     GameManager.Instance.StartNewDay();
-        // }
+        // Disable player input
+        SetPlayerEnabled(false);
+        
+        // Ẩn panel day end
+        if (dayEndPanelVFX != null)
+        {
+            dayEndPanelVFX.FadeOutUI(() =>
+            {
+                DayEndPanel.SetActive(false);
+                isPanelVisible = false;
+            });
+        }
+        
+        // Phát transition animation (full: zoom in -> hold -> zoom out)
+        if (logoTransition != null && logoTransition.IsReady())
+        {
+            logoTransition.PlayFullTransition(() =>
+            {
+                // Callback sau khi transition hoàn tất
+                OnTransitionComplete();
+            });
+        }
+        else
+        {
+            // Fallback nếu không có transition
+            Debug.LogWarning("[MainGameButtons] LogoSceneTransition không sẵn sàng, skip transition");
+            OnTransitionComplete();
+        }
+    }
+    
+    /// <summary>
+    /// Được gọi sau khi transition hoàn tất
+    /// </summary>
+    private void OnTransitionComplete()
+    {
+        Debug.Log("[MainGameButtons] Transition hoàn tất - Bắt đầu ngày mới");
+        
+        // Reset thời gian về sáng
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.StartNewDay();
+        }
+        
+        // Auto save
+        if (GameManager.Instance != null && GameManager.Instance.SaveLoad != null)
+        {
+            GameManager.Instance.SaveLoad.AutoSave();
+            Debug.Log("[MainGameButtons] 💾 Auto saved!");
+        }
+        
+        // Tăng ngày trong MoneyManager
+        if (GameManager.Instance != null && GameManager.Instance.Money != null)
+        {
+            GameManager.Instance.Money.NextDay();
+        }
+        
+        // Bắt đầu ngày mới (reset NPCs, etc.)
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.StartNewDay();
+        }
+        
+        // Enable player lại
+        SetPlayerEnabled(true);
+        
+        Debug.Log("🌅 [MainGameButtons] Ngày mới đã bắt đầu!");
+    }
+    
+    /// <summary>
+    /// Enable/Disable player
+    /// </summary>
+    private void SetPlayerEnabled(bool enabled)
+    {
+        if (playerObject != null)
+        {
+            // Disable/Enable các component điều khiển
+            var controller = playerObject.GetComponent<CharacterController>();
+            if (controller != null)
+                controller.enabled = enabled;
+            
+            var playerInput = playerObject.GetComponent<UnityEngine.InputSystem.PlayerInput>();
+            if (playerInput != null)
+                playerInput.enabled = enabled;
+                
+            // Hoặc disable toàn bộ script điều khiển
+            var playerController = playerObject.GetComponent<PlayerController>();
+            if (playerController != null)
+                playerController.enabled = enabled;
+        }
+        
+        // Lock/Unlock cursor tương ứng
+        if (enabled)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 
     #region Public Methods for External Calls

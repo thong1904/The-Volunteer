@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7941141174132406974}
   - component: {fileID: 1327240172034050763}
   - component: {fileID: 4865902069154159842}
-  - component: {fileID: 9190153079522039584}
+  - component: {fileID: 8373800662573662402}
   m_Layer: 0
   m_Name: Tall Tree
   m_TagString: Untagged
@@ -88,8 +88,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &9190153079522039584
-CapsuleCollider:
+--- !u!64 &8373800662573662402
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -106,8 +106,7 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 1.443322
-  m_Height: 5.753488
-  m_Direction: 1
-  m_Center: {x: 0.11112863, y: 2.8740695, z: -0.10817897}
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4125040475677814547, guid: f833ada56abeb5e44a899caea5d1aa5a, type: 3}

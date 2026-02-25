@@ -7,6 +7,8 @@ using UnityEngine;
 public class BuildableObject : ScriptableObject
 {
     [Header("Basic Info")]
+    [Tooltip("ID duy nhất để save/load. Nên giữ nguyên sau khi đã có save data!")]
+    public string objectId;  // ID duy nhất cho save/load
     public string objectName;
     [TextArea(2, 4)]
     public string description;

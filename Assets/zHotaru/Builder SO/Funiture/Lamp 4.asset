@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8aa79291fa78c1149a418f1336c1e225, type: 3}
   m_Name: Lamp 4
   m_EditorClassIdentifier: 
+  objectId: FU7
   objectName: "\u0110\xE8n 4"
   description: 
   icon: {fileID: 0}

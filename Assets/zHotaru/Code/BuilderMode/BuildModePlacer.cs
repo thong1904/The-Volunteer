@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 
 /// <summary>
 /// BuildModePlacer - Xử lý việc đặt object thật trong Build Mode
@@ -15,13 +16,18 @@ public class BuildModePlacer : MonoBehaviour
     #region Serialized Fields
     [Header("Placement Settings")]
     [SerializeField] private KeyCode placeKey = KeyCode.Mouse0;     // Phím đặt object (chuột trái)
-    [SerializeField] private KeyCode removeKey = KeyCode.X;         // Phím xóa object (X)
+    [SerializeField] private KeyCode cancelKey = KeyCode.X;         // Phím hủy chọn (X)
     [SerializeField] private Transform placedObjectsParent;          // Parent chứa các object đã đặt
     
     [Header("Audio")]
     [SerializeField] private AudioClip placeSound;
     [SerializeField] private AudioClip removeSound;
     [SerializeField] private AudioClip errorSound;
+    
+    [Header("NavMesh")]
+    [Tooltip("NavMeshSurface để rebake khi đặt/xóa object")]
+    [SerializeField] private NavMeshSurface navMeshSurface;
+    [SerializeField] private bool rebakeNavMeshOnChange = true;
     
     [Header("Debug")]
     [SerializeField] private bool logPlacements = true;
@@ -30,11 +36,16 @@ public class BuildModePlacer : MonoBehaviour
     #region Private Fields
     private List<PlacedObjectData> _placedObjects = new List<PlacedObjectData>();
     private AudioSource _audioSource;
+    private bool _isInMoveMode = false; // Khi đang move thì không tốn tiền
+    
+    [Header("Refund Settings")]
+    [SerializeField] private float refundPercentage = 0.75f; // Hoàn 75% tiền khi xóa
     #endregion
 
     #region Properties
     public List<PlacedObjectData> PlacedObjects => _placedObjects;
     public int PlacedCount => _placedObjects.Count;
+    public bool IsInMoveMode => _isInMoveMode;
     #endregion
 
     #region Events
@@ -74,7 +85,7 @@ public class BuildModePlacer : MonoBehaviour
         }
 
         HandlePlacementInput();
-        HandleRemoveInput();
+        HandleCancelInput();
     }
     #endregion
 
@@ -99,17 +110,22 @@ public class BuildModePlacer : MonoBehaviour
         }
     }
 
-    private void HandleRemoveInput()
+    private void HandleCancelInput()
     {
-        // Không remove nếu đang click vào UI
+        // Không xử lý nếu đang click vào UI
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
         {
             return;
         }
         
-        if (Input.GetKeyDown(removeKey))
+        if (Input.GetKeyDown(cancelKey))
         {
-            TryRemoveObject();
+            // Nếu đang chọn object thì hủy chọn
+            if (BuildModeObjectSelector.Instance != null && BuildModeObjectSelector.Instance.HasSelection)
+            {
+                BuildModeObjectSelector.Instance.ClearSelection();
+                if (logPlacements) Debug.Log("<color=yellow>[BuildModePlacer]</color> Đã hủy chọn object");
+            }
         }
     }
     #endregion
@@ -152,6 +168,17 @@ public class BuildModePlacer : MonoBehaviour
             return false;
         }
 
+        // Kiểm tra đủ tiền không (bỏ qua nếu đang move)
+        if (!_isInMoveMode && MoneyManager.Instance != null)
+        {
+            if (!MoneyManager.Instance.SpendMoney(buildableObject.price))
+            {
+                PlaySound(errorSound);
+                if (logPlacements) Debug.Log($"<color=red>[BuildModePlacer]</color> Không đủ tiền! Cần: {buildableObject.price}");
+                return false;
+            }
+        }
+
         // Đặt object
         GameObject placedObject = PlaceObject(buildableObject, placementInfo.position, placementInfo.rotation);
 
@@ -161,10 +188,13 @@ public class BuildModePlacer : MonoBehaviour
             
             if (logPlacements)
             {
-                Debug.Log($"<color=green>[BuildModePlacer]</color> Đã đặt {buildableObject.objectName} tại {placementInfo.position}");
+                Debug.Log($"<color=green>[BuildModePlacer]</color> Đã đặt {buildableObject.objectName} tại {placementInfo.position} (Giá: {buildableObject.price}$)");
             }
 
             OnObjectPlaced?.Invoke(placedObject, buildableObject);
+            
+            // Rebake NavMesh để NPC tránh vật thể mới
+            RebakeNavMesh();
             
             // Clear selection sau khi đặt (single placement mode)
             BuildModeObjectSelector.Instance.ClearSelection();
@@ -207,7 +237,47 @@ public class BuildModePlacer : MonoBehaviour
         var marker = placedObject.AddComponent<PlacedObjectMarker>();
         marker.Data = data;
 
+        // Đánh dấu DisplayArea là đã được build (nếu có)
+        var displayArea = placedObject.GetComponentInChildren<DisplayArea>();
+        if (displayArea != null)
+        {
+            displayArea.MarkAsBuilt();
+            if (logPlacements) Debug.Log($"<color=cyan>[BuildModePlacer]</color> Đánh dấu DisplayArea đã build: {placedObject.name}");
+            
+            // Refresh display cache để NPC có thể thấy display mới
+            var npcManager = FindFirstObjectByType<NPCManager>();
+            if (npcManager != null)
+            {
+                npcManager.RefreshDisplayCache();
+            }
+        }
+
         return placedObject;
+    }
+
+    /// <summary>
+    /// Bật/tắt chế độ move (khi move thì đặt không tốn tiền)
+    /// </summary>
+    public void SetMoveMode(bool isMoving)
+    {
+        _isInMoveMode = isMoving;
+        if (logPlacements) Debug.Log($"<color=magenta>[BuildModePlacer]</color> Move mode: {isMoving}");
+    }
+
+    /// <summary>
+    /// Đặt object mà không tốn tiền (dùng khi load từ save)
+    /// </summary>
+    public GameObject PlaceObjectWithoutCost(BuildableObject buildableObject, Vector3 position, Quaternion rotation)
+    {
+        // Gọi PlaceObject trực tiếp mà không qua TryPlaceObject (không check/spend money)
+        GameObject obj = PlaceObject(buildableObject, position, rotation);
+        
+        if (obj != null && logPlacements)
+        {
+            Debug.Log($"<color=blue>[BuildModePlacer]</color> Loaded từ save: {buildableObject.objectName}");
+        }
+        
+        return obj;
     }
 
     /// <summary>
@@ -240,7 +310,8 @@ public class BuildModePlacer : MonoBehaviour
     /// <summary>
     /// Xóa object đã đặt
     /// </summary>
-    public void RemoveObject(PlacedObjectData data)
+    /// <param name="refund">Có hoàn tiền không (mặc định: true)</param>
+    public void RemoveObject(PlacedObjectData data, bool refund = true)
     {
         if (data == null || data.gameObject == null)
         {
@@ -248,6 +319,14 @@ public class BuildModePlacer : MonoBehaviour
         }
 
         _placedObjects.Remove(data);
+        
+        // Hoàn tiền khi xóa object
+        if (refund && data.buildableObject != null && MoneyManager.Instance != null)
+        {
+            int refundAmount = Mathf.RoundToInt(data.buildableObject.price * refundPercentage);
+            MoneyManager.Instance.AddMoney(refundAmount);
+            if (logPlacements) Debug.Log($"<color=green>[BuildModePlacer]</color> Hoàn {refundAmount}$ ({refundPercentage * 100}% của {data.buildableObject.price}$)");
+        }
         
         PlaySound(removeSound);
         
@@ -257,6 +336,9 @@ public class BuildModePlacer : MonoBehaviour
         }
 
         OnObjectRemoved?.Invoke(data.gameObject);
+        
+        // Rebake NavMesh sau khi xóa vật thể
+        RebakeNavMesh();
         
         Destroy(data.gameObject);
     }
@@ -304,6 +386,30 @@ public class BuildModePlacer : MonoBehaviour
 
         PlacedObjectData lastData = _placedObjects[_placedObjects.Count - 1];
         RemoveObject(lastData);
+    }
+
+    /// <summary>
+    /// Rebake NavMesh để NPC tránh vật thể mới đặt/xóa
+    /// </summary>
+    private void RebakeNavMesh()
+    {
+        if (!rebakeNavMeshOnChange) return;
+        
+        // Tự động tìm NavMeshSurface nếu chưa gán
+        if (navMeshSurface == null)
+        {
+            navMeshSurface = FindFirstObjectByType<NavMeshSurface>();
+        }
+        
+        if (navMeshSurface != null)
+        {
+            navMeshSurface.BuildNavMesh();
+            if (logPlacements) Debug.Log("<color=cyan>[BuildModePlacer]</color> NavMesh đã được rebake");
+        }
+        else
+        {
+            if (logPlacements) Debug.LogWarning("<color=yellow>[BuildModePlacer]</color> Không tìm thấy NavMeshSurface để rebake");
+        }
     }
 
     private void PlaySound(AudioClip clip)

@@ -11,10 +11,13 @@ public class GameManager : MonoBehaviour
     
     [Header("Sub-Managers")]
     [SerializeField] private NPCManager npcManager;
-    [SerializeField] private UpgradeManager upgradeManager;
+    [SerializeField] private MoneyManager moneyManager;
     [SerializeField] private SaveLoadManager saveLoadManager;
     [SerializeField] private UIManager uiManager;
-    [SerializeField] private ScoreManager scoreManager;
+    
+    [Header("Camera Control")]
+    [Tooltip("Kéo Camera hoặc GameObject chứa script điều khiển camera vào đây")]
+    [SerializeField] private MonoBehaviour cameraController;
     
     [Header("Scene Settings")]
     [SerializeField] private string[] gameplayScenes = { "GameScene", "Museum", "Gameplay" };
@@ -26,10 +29,9 @@ public class GameManager : MonoBehaviour
     
     // Properties để truy cập Sub-Managers
     public NPCManager NPCs => npcManager;
-    public UpgradeManager Upgrades => upgradeManager;
+    public MoneyManager Money => moneyManager;
     public SaveLoadManager SaveLoad => saveLoadManager;
     public UIManager UI => uiManager;
-    public ScoreManager Score => scoreManager;
     
     // Events
     public event Action OnGameStart;
@@ -57,6 +59,7 @@ public class GameManager : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
         UnsubscribeFromNPCManager();
+        UnsubscribeFromDayNight();
     }
     
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -68,32 +71,49 @@ public class GameManager : MonoBehaviour
         if (uiManager != null)
             uiManager.Initialize();
         
-        if (!isFirstSceneLoad && IsGameplayScene(scene.name))
+        if (!isFirstSceneLoad)
         {
-            Debug.Log($"[GameManager] Detected gameplay scene: {scene.name}. Starting new day...");
-            StartNewDay();
+            if (IsGameplayScene(scene.name))
+            {
+                Debug.Log($"[GameManager] Detected gameplay scene: {scene.name}. Starting new day...");
+                StartNewDay();
+            }
+            else
+            {
+                // Non-gameplay scene (Main Menu, etc.) - hiển thị cursor
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                isGameRunning = false;
+                Debug.Log($"[GameManager] Non-gameplay scene: {scene.name}. Cursor unlocked.");
+            }
         }
     }
     
     private bool IsGameplayScene(string sceneName)
     {
-        if (gameplayScenes == null || gameplayScenes.Length == 0)
-        {
-            return npcManager != null;
-        }
-        
-        foreach (string gpScene in gameplayScenes)
-        {
-            if (sceneName.Contains(gpScene) || gpScene.Contains(sceneName))
-                return true;
-        }
-        return false;
+        // Kiểm tra dựa trên sự tồn tại của DayNightManager
+        // Main Menu không có DayNightManager, chỉ Gameplay scene mới có
+        return DayNightManager.Instance != null;
     }
     
     void Start()
     {
         SubscribeToNPCManager();
-        StartNewDay();
+        SubscribeToDayNight();
+        
+        // Chỉ StartNewDay nếu đang ở gameplay scene
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        if (IsGameplayScene(currentSceneName))
+        {
+            StartNewDay();
+        }
+        else
+        {
+            // Main Menu - đảm bảo cursor hiển thị
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        
         isFirstSceneLoad = false;
     }
     
@@ -108,17 +128,14 @@ public class GameManager : MonoBehaviour
         if (npcManager == null)
             npcManager = GetComponentInChildren<NPCManager>();
         
-        if (upgradeManager == null)
-            upgradeManager = GetComponentInChildren<UpgradeManager>();
+        if (moneyManager == null)
+            moneyManager = GetComponentInChildren<MoneyManager>();
             
         if (saveLoadManager == null)
             saveLoadManager = GetComponentInChildren<SaveLoadManager>();
         
         if (uiManager == null)
             uiManager = GetComponentInChildren<UIManager>();
-        
-        if (scoreManager == null)
-            scoreManager = GetComponentInChildren<ScoreManager>();
         
         FindSceneManagers();
         
@@ -134,8 +151,8 @@ public class GameManager : MonoBehaviour
         if (npcManager == null)
             npcManager = FindAnyObjectByType<NPCManager>();
         
-        if (upgradeManager == null)
-            upgradeManager = FindAnyObjectByType<UpgradeManager>();
+        if (moneyManager == null)
+            moneyManager = FindAnyObjectByType<MoneyManager>();
             
         if (saveLoadManager == null)
             saveLoadManager = FindAnyObjectByType<SaveLoadManager>();
@@ -143,14 +160,11 @@ public class GameManager : MonoBehaviour
         if (uiManager == null)
             uiManager = FindAnyObjectByType<UIManager>();
         
-        if (scoreManager == null)
-            scoreManager = FindAnyObjectByType<ScoreManager>();
-        
         // Subscribe lại vào manager mới
         SubscribeToNPCManager();
         
-        Debug.Log($"[GameManager] Managers found - NPC:{npcManager != null}, Upgrade:{upgradeManager != null}, " +
-                  $"SaveLoad:{saveLoadManager != null}, UI:{uiManager != null}, Score:{scoreManager != null}");
+        Debug.Log($"[GameManager] Managers found - NPC:{npcManager != null}, Money:{moneyManager != null}, " +
+                  $"SaveLoad:{saveLoadManager != null}, UI:{uiManager != null}");
     }
     
     private void SubscribeToNPCManager()
@@ -176,6 +190,40 @@ public class GameManager : MonoBehaviour
     private void HandleAllNPCsLeft()
     {
         Debug.Log("[GameManager] Tất cả NPC đã rời đi!");
+        // Không tự động end day - chờ DayNightManager
+    }
+    
+    private void SubscribeToDayNight()
+    {
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.OnSunset -= HandleSunset;
+            DayNightManager.Instance.OnSunset += HandleSunset;
+        }
+    }
+    
+    private void UnsubscribeFromDayNight()
+    {
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.OnSunset -= HandleSunset;
+        }
+    }
+    
+    /// <summary>
+    /// Được gọi khi DayNightManager kết thúc ngày (tối)
+    /// </summary>
+    private void HandleSunset()
+    {
+        Debug.Log("[GameManager] 🌅 DayNightManager: Hoàng hôn - Kết thúc ngày!");
+        
+        // Bắt tất cả NPC rời đi
+        if (npcManager != null)
+        {
+            npcManager.ForceAllNPCsToLeave();
+        }
+        
+        // Kết thúc ngày
         EndDay();
     }
     
@@ -184,15 +232,35 @@ public class GameManager : MonoBehaviour
         isGameRunning = true;
         isPaused = false;
         
-        if (Score != null) Score.ResetScore();
+        // Khóa cursor và bật camera cho gameplay
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        SetCameraEnabled(true);
+        
+        if (Money != null) Money.ResetDayStats();
         if (npcManager != null) 
         {
             npcManager.ResetDayCounters(); // Reset counters cho ngày mới
-            npcManager.StartCustomerSpawning();
+            // KHÔNG tự động spawn - chờ player tương tác với DayStartInteractable
+        }
+        
+        // Dừng thời gian cho đến khi player bắt đầu ngày
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.SetTimeRunning(false);
         }
         
         OnGameStart?.Invoke();
-        Debug.Log("🌅 Ngày mới bắt đầu!");
+        Debug.Log("🌅 Ngày mới đã sẵn sàng! Chờ player bắt đầu...");
+    }
+    
+    /// <summary>
+    /// Được gọi khi player tương tác với DayStartInteractable
+    /// </summary>
+    public void NotifyDayStarted()
+    {
+        Debug.Log("[GameManager] Ngày đã được bắt đầu bởi player!");
+        // Có thể thêm logic khác ở đây nếu cần
     }
     
     public void EndDay()
@@ -203,11 +271,16 @@ public class GameManager : MonoBehaviour
         
         if (npcManager != null) npcManager.StopCustomerSpawning();
         
+        // Hiển thị cursor và tắt camera khi kết thúc ngày
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        SetCameraEnabled(false);
+        
         OnDayEnd?.Invoke();
         
         AutoSave();
         
-        Debug.Log($"🌙 Ngày kết thúc! Tổng điểm: {Score?.GetTotalScore() ?? 0}");
+        Debug.Log($"🌙 Ngày kết thúc! Tổng tiền: {Money?.GetTotalMoney() ?? 0}");
     }
     
     public void PauseGame()
@@ -249,5 +322,14 @@ public class GameManager : MonoBehaviour
             saveLoadManager.SaveGame();
             Debug.Log("💾 Auto-saved!");
         }
+    }
+    
+    /// <summary>
+    /// Bật/tắt camera controller
+    /// </summary>
+    private void SetCameraEnabled(bool enabled)
+    {
+        if (cameraController != null)
+            cameraController.enabled = enabled;
     }
 }

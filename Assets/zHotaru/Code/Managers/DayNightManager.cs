@@ -66,7 +66,7 @@ public class DayNightManager : MonoBehaviour
     [SerializeField] private float sunsetEnd = 19f;       // Kết thúc hoàng hôn
 
     private float currentHour;
-    private bool isRunning = true;
+    private bool isRunning = false;  // Chỉ chạy khi StartDay() được gọi
 
     public event Action<float> OnTimeChanged;
     public event Action OnSunset;
@@ -351,9 +351,11 @@ public class DayNightManager : MonoBehaviour
     public void StartNewDay()
     {
         currentHour = startHour;
-        isRunning = true;
+        // KHÔNG tự động chạy thời gian - chờ player tương tác với DayStartInteractable
+        isRunning = false;
+        UpdateEnvironment(); // Cập nhật môi trường về sáng sớm
         OnNewDay?.Invoke();
-        Debug.Log("Ngày mới bắt đầu!");
+        Debug.Log("[DayNightManager] Ngày mới đã reset - Chờ player bắt đầu!");
     }
     
     /// <summary>

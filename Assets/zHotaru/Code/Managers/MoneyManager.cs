@@ -2,39 +2,84 @@ using UnityEngine;
 using System;
 
 /// <summary>
-/// Quản lý điểm số và thống kê. Là con của GameManager.
-/// Truy cập qua: GameManager.Instance.Score
+/// Quản lý tiền và thống kê trong game.
+/// Thay thế ScoreManager - sử dụng Money thay vì Score.
 /// </summary>
-public class ScoreManager : MonoBehaviour
+public class MoneyManager : MonoBehaviour
 {
-    public static ScoreManager Instance { get; private set; }
+    public static MoneyManager Instance { get; private set; }
 
+    [Header("Money Settings")]
+    [SerializeField] private int startingMoney = 0;
+    
     [Header("Statistics")]
-    private int totalScore = 0;
+    private int totalMoney = 0;
     private int correctAnswers = 0;
     private int wrongAnswers = 0;
     private int totalInteractions = 0;
     private float dayStartTime = 0f;
     private int currentDay = 1;
+    
+    // Tiền kiếm được trong ngày (để hiển thị cuối ngày)
+    private int moneyEarnedToday = 0;
 
     // Events
-    public event Action<int> OnScoreChanged;
+    public event Action<int> OnMoneyChanged;
     public event Action<DayStatistics> OnDayStatsUpdated;
 
     void Awake()
     {
         Instance = this;
+        totalMoney = startingMoney;
+    }
+
+    #region Money Methods
+
+    /// <summary>
+    /// Thêm tiền (kiếm được từ câu hỏi, bán hàng, v.v.)
+    /// </summary>
+    public void AddMoney(int amount)
+    {
+        if (amount <= 0) return;
+        
+        totalMoney += amount;
+        moneyEarnedToday += amount;
+        Debug.Log($"💰 Money Added: +{amount} | Total: {totalMoney}");
+        OnMoneyChanged?.Invoke(totalMoney);
     }
 
     /// <summary>
-    /// Thêm điểm vào tổng
+    /// Chi tiêu tiền (mua hàng, nâng cấp, v.v.)
     /// </summary>
-    public void AddScore(int points)
+    public bool SpendMoney(int amount)
     {
-        totalScore += points;
-        Debug.Log($"Score Added: {points} | Total Score: {totalScore}");
-        OnScoreChanged?.Invoke(totalScore);
+        if (amount <= 0) return true;
+        
+        if (totalMoney < amount)
+        {
+            Debug.Log($"❌ Not enough money! Need: {amount}, Have: {totalMoney}");
+            return false;
+        }
+
+        totalMoney -= amount;
+        Debug.Log($"💸 Money Spent: -{amount} | Left: {totalMoney}");
+        OnMoneyChanged?.Invoke(totalMoney);
+        return true;
     }
+
+    /// <summary>
+    /// Lấy tổng tiền hiện tại
+    /// </summary>
+    public int GetTotalMoney() => totalMoney;
+    
+    /// <summary>
+    /// Lấy tiền kiếm được trong ngày
+    /// </summary>
+    public int GetMoneyEarnedToday() => moneyEarnedToday;
+
+    #endregion
+
+    #region Statistics Methods
 
     /// <summary>
     /// Ghi nhận câu trả lời đúng
@@ -48,7 +93,7 @@ public class ScoreManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Ghi nhận câu trả lời sai
+    /// Ghi nhận câu trả lời sai (không trừ tiền)
     /// </summary>
     public void RecordWrongAnswer()
     {
@@ -59,18 +104,13 @@ public class ScoreManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Ghi nhận 1 lượt tương tác (không phải câu hỏi, VD: nhặt rác)
+    /// Ghi nhận 1 lượt tương tác
     /// </summary>
     public void RecordInteraction()
     {
         totalInteractions++;
         OnDayStatsUpdated?.Invoke(GetDayStatistics());
     }
-
-    /// <summary>
-    /// Lấy tổng điểm hiện tại
-    /// </summary>
-    public int GetTotalScore() => totalScore;
 
     /// <summary>
     /// Lấy số câu trả lời đúng
@@ -109,42 +149,51 @@ public class ScoreManager : MonoBehaviour
             totalInteractions = totalInteractions,
             correctAnswers = correctAnswers,
             wrongAnswers = wrongAnswers,
-            totalScore = totalScore
+            totalMoney = totalMoney,
+            moneyEarnedToday = moneyEarnedToday
         };
     }
 
+    #endregion
+
+    #region Day Management
+
     /// <summary>
-    /// Reset điểm và thống kê cho ngày mới
+    /// Reset thống kê cho ngày mới (giữ lại tiền)
     /// </summary>
-    public void ResetScore()
+    public void ResetDayStats()
     {
-        totalScore = 0;
         correctAnswers = 0;
         wrongAnswers = 0;
         totalInteractions = 0;
+        moneyEarnedToday = 0;
         dayStartTime = Time.time;
         
-        Debug.Log($"📊 Stats Reset for Day {currentDay}");
-        OnScoreChanged?.Invoke(totalScore);
+        Debug.Log($"📊 Day Stats Reset for Day {currentDay}. Total Money: {totalMoney}");
+        OnDayStatsUpdated?.Invoke(GetDayStatistics());
     }
 
     /// <summary>
-    /// Chuyển sang ngày mới (tăng day counter)
+    /// Chuyển sang ngày mới
     /// </summary>
     public void NextDay()
     {
         currentDay++;
-        ResetScore();
+        ResetDayStats();
         Debug.Log($"📅 Advanced to Day {currentDay}");
     }
 
+    #endregion
+
+    #region Save/Load Support
+
     /// <summary>
-    /// Set score trực tiếp (dùng cho load game)
+    /// Set money trực tiếp (dùng cho load game)
     /// </summary>
-    public void SetScore(int score)
+    public void SetMoney(int money)
     {
-        totalScore = score;
-        OnScoreChanged?.Invoke(totalScore);
+        totalMoney = money;
+        OnMoneyChanged?.Invoke(totalMoney);
     }
 
     /// <summary>
@@ -154,6 +203,39 @@ public class ScoreManager : MonoBehaviour
     {
         currentDay = day;
     }
+
+    #endregion
+
+    #region Debug
+
+    /// <summary>
+    /// Debug: Cộng tiền (dùng để test)
+    /// </summary>
+    [ContextMenu("Debug: Add 100 Money")]
+    public void DebugAddMoney100()
+    {
+        AddMoney(100);
+    }
+
+    /// <summary>
+    /// Debug: Cộng tiền (dùng để test)
+    /// </summary>
+    [ContextMenu("Debug: Add 1000 Money")]
+    public void DebugAddMoney1000()
+    {
+        AddMoney(1000);
+    }
+
+    /// <summary>
+    /// Debug: Thêm tiền tùy ý
+    /// </summary>
+    public void DebugAddMoney(int amount)
+    {
+        AddMoney(amount);
+        Debug.Log($"[DEBUG] Added {amount} money. Total: {totalMoney}");
+    }
+
+    #endregion
 }
 
 /// <summary>
@@ -167,7 +249,8 @@ public struct DayStatistics
     public int totalInteractions;
     public int correctAnswers;
     public int wrongAnswers;
-    public int totalScore;
+    public int totalMoney;
+    public int moneyEarnedToday;
 
     public string GetPlayTimeString()
     {

@@ -163,6 +163,18 @@ public class BuilderMode : MonoBehaviour
         
         _isInBuildMode = false;
         
+        // Clear preview khi thoát build mode
+        if (BuildModePreview.Instance != null)
+        {
+            BuildModePreview.Instance.ClearPreview();
+        }
+        
+        // Clear selection
+        if (BuildModeObjectSelector.Instance != null)
+        {
+            BuildModeObjectSelector.Instance.ClearSelection();
+        }
+        
         // Ẩn UI Build Mode
         if (buildModeUI != null)
         {

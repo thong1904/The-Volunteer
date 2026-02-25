@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8aa79291fa78c1149a418f1336c1e225, type: 3}
   m_Name: "M\xE1y bay"
   m_EditorClassIdentifier: 
+  objectId: DI2
   objectName: "M\xE1y bay"
   description: 
   icon: {fileID: 0}

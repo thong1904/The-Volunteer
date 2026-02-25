@@ -4,15 +4,18 @@ using BehaviorDesigner.Runtime.Tasks;
 
 [TaskCategory("NPC")]
 [TaskName("Question Event")]
-[TaskDescription("NPC đặt câu hỏi cho người chơi qua UI")]
+[TaskDescription("NPC đặt câu hỏi cho người chơi qua UI - Chờ player tương tác trước")]
 public class NPCQuestionEvent : Action
 {
     private NPCBehaviorTree npcBehavior;
+    private NPCInteractable npcInteractable;
     
     [Header("Animation")]
-    [SerializeField] private string waveAnimationName = "Wave";
-    //[SerializeField] private string happyAnimationName = "Happy";
-    //[SerializeField] private string sadAnimationName = "Sad";
+    [SerializeField] private string waveAnimationName = "wave";  // Đổi thành lowercase
+    
+    [Header("Interaction Settings")]
+    [SerializeField] private float interactionWaitTime = 15f;    // Thời gian chờ player tương tác
+    [SerializeField] private string interactPrompt = "E to talk";
     
     [Header("Question Settings")]
     [SerializeField] private QuestionData[] questions; // Fallback nếu không có DisplayObject
@@ -22,29 +25,45 @@ public class NPCQuestionEvent : Action
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private float faceRotationSpeed = 8f;
     
-    [Header("Score")]
-    [SerializeField] private int correctAnswerPoints = 10;
-    [SerializeField] private int wrongAnswerPoints = -5;
+    [Header("Money Reward")]
+    [SerializeField] private int correctAnswerMoney = 10;
+    [UnityEngine.Tooltip("Không trừ tiền khi trả lời sai")]
+    [SerializeField] private int wrongAnswerMoney = 0;
     
+    private enum QuestionState
+    {
+        WaitingForInteraction,  // Đang chờ player tương tác
+        AskingQuestion,          // Đang hiển thị câu hỏi
+        Completed                // Hoàn thành
+    }
+    
+    private QuestionState currentState;
     private QuestionData currentQuestion;
-    private bool isQuestionActive = false;
-    //private bool questionAnswered = false;
     private bool wasCorrect = false;
     private Transform playerTransform;
+    private float interactionTimer;
     
     public override void OnAwake()
     {
         npcBehavior = GetComponent<NPCBehaviorTree>();
+        
+        // Lấy hoặc tạo NPCInteractable
+        npcInteractable = GetComponent<NPCInteractable>();
+        if (npcInteractable == null)
+        {
+            npcInteractable = gameObject.AddComponent<NPCInteractable>();
+        }
     }
     
     public override void OnStart()
     {
         var npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
-        Debug.Log($"[NPCQuestionEvent] {npcName}: Start. Facing player and showing question.");
+        Debug.Log($"[NPCQuestionEvent] {npcName}: Start. Playing wave animation, waiting for player interaction.");
         
         playerTransform = FindPlayerTransform();
-        //questionAnswered = false;
         wasCorrect = false;
+        currentState = QuestionState.WaitingForInteraction;
+        interactionTimer = interactionWaitTime;
         
         // Dừng di chuyển
         Rigidbody rb = transform.GetComponent<Rigidbody>();
@@ -53,18 +72,32 @@ public class NPCQuestionEvent : Action
             rb.linearVelocity = Vector3.zero;
         }
         
-        // Phát animation wave
+        // Phát animation wave (lowercase)
         if (npcBehavior != null)
             npcBehavior.PlayAnimation(waveAnimationName);
         
-        // Bắt đầu hiển thị câu hỏi ngay
-        BeginQuestion();
+        // Bật chế độ chờ tương tác
+        if (npcInteractable != null)
+        {
+            npcInteractable.OnPlayerInteracted += OnPlayerInteracted;
+            npcInteractable.EnableInteraction(interactPrompt);
+        }
+    }
+    
+    public override void OnEnd()
+    {
+        // Cleanup event
+        if (npcInteractable != null)
+        {
+            npcInteractable.OnPlayerInteracted -= OnPlayerInteracted;
+            npcInteractable.DisableInteraction();
+        }
     }
     
     public override TaskStatus OnUpdate()
     {
         // Xoay về phía người chơi
-        if (playerTransform != null && isQuestionActive)
+        if (playerTransform != null)
         {
             var toPlayer = playerTransform.position - transform.position;
             toPlayer.y = 0f;
@@ -75,24 +108,56 @@ public class NPCQuestionEvent : Action
             }
         }
         
-        // Chờ UI xử lý xong
-        if (isQuestionActive)
+        switch (currentState)
         {
-            // Kiểm tra UI đã hoàn thành chưa
-            if (QuestionUIController.Instance != null && QuestionUIController.Instance.HasAnswered)
-            {
-                // Đợi UI ẩn xong
-                if (!QuestionUIController.Instance.IsShowing)
+            case QuestionState.WaitingForInteraction:
+                // Đếm ngược thời gian chờ
+                interactionTimer -= Time.deltaTime;
+                
+                if (interactionTimer <= 0f)
                 {
-                    isQuestionActive = false;
-                    OnQuestionComplete();
+                    // Hết thời gian chờ → NPC không hỏi nữa
+                    var npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
+                    Debug.Log($"[NPCQuestionEvent] {npcName}: Hết thời gian chờ ({interactionWaitTime}s) - Bỏ qua câu hỏi");
+                    
+                    if (npcInteractable != null)
+                        npcInteractable.DisableInteraction();
+                    
                     return TaskStatus.Success;
                 }
-            }
-            return TaskStatus.Running;
+                return TaskStatus.Running;
+                
+            case QuestionState.AskingQuestion:
+                // Chờ UI xử lý xong
+                if (QuestionUIController.Instance != null && QuestionUIController.Instance.HasAnswered)
+                {
+                    // Đợi UI ẩn xong
+                    if (!QuestionUIController.Instance.IsShowing)
+                    {
+                        currentState = QuestionState.Completed;
+                        OnQuestionComplete();
+                        return TaskStatus.Success;
+                    }
+                }
+                return TaskStatus.Running;
+                
+            case QuestionState.Completed:
+                return TaskStatus.Success;
         }
         
-        return TaskStatus.Success;
+        return TaskStatus.Running;
+    }
+    
+    /// <summary>
+    /// Được gọi khi player tương tác với NPC
+    /// </summary>
+    private void OnPlayerInteracted()
+    {
+        var npcName = npcBehavior != null ? npcBehavior.NPCName : gameObject.name;
+        Debug.Log($"[NPCQuestionEvent] {npcName}: Player đã tương tác! Hiển thị câu hỏi.");
+        
+        currentState = QuestionState.AskingQuestion;
+        BeginQuestion();
     }
     
     private void BeginQuestion()
@@ -106,7 +171,7 @@ public class NPCQuestionEvent : Action
         if (currentQuestion == null)
         {
             Debug.LogWarning($"[NPCQuestionEvent] {npcName}: No question available.");
-            isQuestionActive = false;
+            currentState = QuestionState.Completed;
             return;
         }
         
@@ -119,7 +184,6 @@ public class NPCQuestionEvent : Action
                 timeLimitSeconds,
                 OnAnswerReceived
             );
-            isQuestionActive = true;
             
             // Phát âm thanh hỏi 1 lần
             if (npcBehavior != null)
@@ -130,7 +194,7 @@ public class NPCQuestionEvent : Action
         else
         {
             Debug.LogError($"[NPCQuestionEvent] {npcName}: QuestionUIController.Instance is null!");
-            isQuestionActive = false;
+            currentState = QuestionState.Completed;
         }
     }
     
@@ -158,26 +222,30 @@ public class NPCQuestionEvent : Action
             Debug.Log($"[NPCQuestionEvent] {npcName}: Answer {selectedIndex} - {(isCorrect ? "CORRECT" : "WRONG")}");
         }
         
-        // Cập nhật điểm
-        int points = isCorrect ? correctAnswerPoints : wrongAnswerPoints;
+        // Cập nhật tiền - chỉ cộng khi đúng, không trừ khi sai
+        int moneyReward = isCorrect ? correctAnswerMoney : wrongAnswerMoney;
         if (isCorrect && currentQuestion.pointsReward > 0)
-            points = currentQuestion.pointsReward;
+            moneyReward = currentQuestion.pointsReward;
         
-        // Gọi ScoreManager để cộng/trừ điểm
-        if (ScoreManager.Instance != null)
+        // Gọi MoneyManager để cộng tiền và ghi nhận thống kê
+        if (MoneyManager.Instance != null)
         {
             if (isCorrect)
-                ScoreManager.Instance.RecordCorrectAnswer();
+            {
+                MoneyManager.Instance.RecordCorrectAnswer();
+                MoneyManager.Instance.AddMoney(moneyReward);
+            }
             else
-                ScoreManager.Instance.RecordWrongAnswer();
-                
-            ScoreManager.Instance.AddScore(points);
+            {
+                MoneyManager.Instance.RecordWrongAnswer();
+                // Không trừ tiền khi trả lời sai
+            }
         }
         else
         {
-            Debug.LogWarning($"[NPCQuestionEvent] ScoreManager.Instance is null!");
+            Debug.LogWarning($"[NPCQuestionEvent] MoneyManager.Instance is null!");
         }
-        Debug.Log($"[NPCQuestionEvent] {npcName}: Points: {points}");
+        Debug.Log($"[NPCQuestionEvent] {npcName}: Money: {(isCorrect ? "+" : "")}{moneyReward}");
     }
     
     private void OnQuestionComplete()

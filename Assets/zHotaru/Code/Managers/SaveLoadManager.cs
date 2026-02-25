@@ -1,8 +1,10 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// Quản lý Save/Load với 3 slot thủ công + 1 Auto Save
+/// Bao gồm: Game data + Building data
 /// </summary>
 public class SaveLoadManager : MonoBehaviour
 {
@@ -166,7 +168,8 @@ public class SaveLoadManager : MonoBehaviour
             return new SaveSlotInfo
             {
                 slotIndex = slotIndex,
-                totalScore = data.totalScore,
+                totalMoney = data.totalMoney,
+                buildingCount = data.buildings?.Count ?? 0,
                 saveDateTime = data.saveDateTime,
                 playTime = data.playTimeSeconds,
                 isEmpty = false
@@ -193,17 +196,15 @@ public class SaveLoadManager : MonoBehaviour
         
         GameData data = new GameData
         {
-            // Score
-            totalScore = gm.Score?.GetTotalScore() ?? 0,
+            // Money
+            totalMoney = gm.Money?.GetTotalMoney() ?? 0,
             
-            // Upgrades
-            npcLimitLevel = gm.Upgrades?.npcLimitLevel ?? 1,
-            playerSpeedLevel = gm.Upgrades?.playerSpeedLevel ?? 1,
-            scoreMultiplierLevel = gm.Upgrades?.scoreMultiplierLevel ?? 1,
+            // Buildings
+            buildings = GetBuildingSaveData(),
             
             // Meta info
             saveDateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-            playTimeSeconds = Time.time, // Hoặc tính tổng thời gian chơi
+            playTimeSeconds = Time.time,
             gameVersion = Application.version
         };
         
@@ -238,17 +239,12 @@ public class SaveLoadManager : MonoBehaviour
                 return false;
             }
             
-            // Load score
-            if (gm.Score != null)
-                gm.Score.SetScore(data.totalScore);
+            // Load money
+            if (gm.Money != null)
+                gm.Money.SetMoney(data.totalMoney);
             
-            // Load upgrades
-            if (gm.Upgrades != null)
-            {
-                gm.Upgrades.npcLimitLevel = data.npcLimitLevel;
-                gm.Upgrades.playerSpeedLevel = data.playerSpeedLevel;
-                gm.Upgrades.scoreMultiplierLevel = data.scoreMultiplierLevel;
-            }
+            // Load buildings
+            LoadBuildingSaveData(data.buildings);
             
             return true;
         }
@@ -274,25 +270,222 @@ public class SaveLoadManager : MonoBehaviour
     public void LoadGame() => LoadFromSlot(1);
     
     #endregion
+    
+    #region Building Save/Load
+    
+    /// <summary>
+    /// Lấy data của tất cả buildings đã đặt
+    /// </summary>
+    private List<BuildingSaveData> GetBuildingSaveData()
+    {
+        var result = new List<BuildingSaveData>();
+        
+        if (BuildModePlacer.Instance == null)
+            return result;
+        
+        foreach (var placedData in BuildModePlacer.Instance.PlacedObjects)
+        {
+            if (placedData.buildableObject == null || placedData.gameObject == null)
+                continue;
+            
+            // Sử dụng objectId nếu có, fallback sang objectName
+            string id = !string.IsNullOrEmpty(placedData.buildableObject.objectId) 
+                ? placedData.buildableObject.objectId 
+                : placedData.buildableObject.objectName;
+            
+            result.Add(new BuildingSaveData
+            {
+                objectId = id,
+                posX = placedData.position.x,
+                posY = placedData.position.y,
+                posZ = placedData.position.z,
+                rotX = placedData.rotation.x,
+                rotY = placedData.rotation.y,
+                rotZ = placedData.rotation.z,
+                rotW = placedData.rotation.w
+            });
+        }
+        
+        Debug.Log($"💾 Saved {result.Count} buildings");
+        return result;
+    }
+    
+    /// <summary>
+    /// Load và spawn lại các buildings từ save data
+    /// </summary>
+    private void LoadBuildingSaveData(List<BuildingSaveData> buildings)
+    {
+        if (buildings == null || buildings.Count == 0)
+        {
+            Debug.Log("📂 No buildings to load");
+            return;
+        }
+        
+        // Tìm BuildModeObjectSelector để lấy danh sách BuildableObjects
+        var objectSelector = BuildModeObjectSelector.Instance;
+        if (objectSelector == null)
+        {
+            objectSelector = FindFirstObjectByType<BuildModeObjectSelector>();
+        }
+        
+        if (objectSelector == null)
+        {
+            Debug.LogWarning("[SaveLoadManager] BuildModeObjectSelector not found! Cannot load buildings.");
+            return;
+        }
+        
+        // Build dictionary để lookup nhanh
+        var buildableDict = new Dictionary<string, BuildableObject>();
+        foreach (var buildable in objectSelector.BuildableObjects)
+        {
+            string key = !string.IsNullOrEmpty(buildable.objectId) ? buildable.objectId : buildable.objectName;
+            if (!buildableDict.ContainsKey(key))
+            {
+                buildableDict[key] = buildable;
+            }
+        }
+        
+        // Clear existing placed objects trước khi load
+        ClearAllBuildings();
+        
+        // Spawn lại các buildings
+        int loadedCount = 0;
+        foreach (var buildingData in buildings)
+        {
+            if (!buildableDict.TryGetValue(buildingData.objectId, out BuildableObject buildable))
+            {
+                Debug.LogWarning($"[SaveLoadManager] BuildableObject not found: {buildingData.objectId}");
+                continue;
+            }
+            
+            Vector3 position = new Vector3(buildingData.posX, buildingData.posY, buildingData.posZ);
+            Quaternion rotation = new Quaternion(buildingData.rotX, buildingData.rotY, buildingData.rotZ, buildingData.rotW);
+            
+            // Dùng BuildModePlacer để đặt object (không tốn tiền khi load)
+            if (BuildModePlacer.Instance != null)
+            {
+                BuildModePlacer.Instance.PlaceObjectWithoutCost(buildable, position, rotation);
+                loadedCount++;
+            }
+        }
+        
+        Debug.Log($"📂 Loaded {loadedCount}/{buildings.Count} buildings");
+        
+        // Refresh NPC display cache
+        var npcManager = FindFirstObjectByType<NPCManager>();
+        if (npcManager != null)
+        {
+            npcManager.RefreshDisplayCache();
+        }
+    }
+    
+    /// <summary>
+    /// Xóa tất cả buildings đã đặt (không xóa save data)
+    /// </summary>
+    public void ClearAllBuildings()
+    {
+        if (BuildModePlacer.Instance != null)
+        {
+            BuildModePlacer.Instance.ClearAllPlacedObjects();
+        }
+        Debug.Log("🗑️ All buildings cleared from scene");
+    }
+    
+    /// <summary>
+    /// Xóa save data của buildings trong slot
+    /// </summary>
+    public void DeleteBuildingsInSlot(int slotIndex)
+    {
+        if (slotIndex < 1 || slotIndex > MAX_SAVE_SLOTS)
+            return;
+        
+        string key = SAVE_SLOT_PREFIX + slotIndex;
+        DeleteBuildingsFromKey(key);
+    }
+    
+    /// <summary>
+    /// Xóa save data của buildings trong Auto Save
+    /// </summary>
+    public void DeleteBuildingsInAutoSave()
+    {
+        DeleteBuildingsFromKey(AUTO_SAVE_KEY);
+    }
+    
+    /// <summary>
+    /// Xóa buildings từ save data (giữ lại money và meta info)
+    /// </summary>
+    private void DeleteBuildingsFromKey(string key)
+    {
+        if (!PlayerPrefs.HasKey(key))
+            return;
+        
+        try
+        {
+            string json = PlayerPrefs.GetString(key);
+            GameData data = JsonUtility.FromJson<GameData>(json);
+            
+            if (data != null)
+            {
+                data.buildings = new List<BuildingSaveData>(); // Clear buildings
+                
+                string newJson = JsonUtility.ToJson(data, true);
+                PlayerPrefs.SetString(key, newJson);
+                PlayerPrefs.Save();
+                
+                Debug.Log($"🗑️ Buildings deleted from save: {key}");
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[SaveLoadManager] Error deleting buildings: {e.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Xóa tất cả save data (bao gồm buildings)
+    /// </summary>
+    public void DeleteAllSaveData()
+    {
+        // Xóa auto save
+        PlayerPrefs.DeleteKey(AUTO_SAVE_KEY);
+        
+        // Xóa tất cả slots
+        for (int i = 1; i <= MAX_SAVE_SLOTS; i++)
+        {
+            PlayerPrefs.DeleteKey(SAVE_SLOT_PREFIX + i);
+        }
+        
+        PlayerPrefs.Save();
+        Debug.Log("🗑️ All save data deleted!");
+    }
+    
+    #endregion
 }
 
 [System.Serializable]
 public class GameData
 {
     // Game Progress
-    public int totalScore;
+    public int totalMoney;
     
-    // Upgrades
-    public int npcLimitLevel;
-    public int playerSpeedLevel;
-    public int scoreMultiplierLevel;
+    // Buildings
+    public List<BuildingSaveData> buildings = new List<BuildingSaveData>();
     
     // Meta Info (để hiển thị trên UI)
     public string saveDateTime;
     public float playTimeSeconds;
     public string gameVersion;
-    
-    // Thêm các field khác khi cần
+}
+
+/// <summary>
+/// Data cần thiết để save/load 1 building
+/// </summary>
+[System.Serializable]
+public class BuildingSaveData
+{
+    public string objectId;  // ID của BuildableObject
+    public float posX, posY, posZ;  // Position (Vector3 không serialize trực tiếp với JsonUtility)
+    public float rotX, rotY, rotZ, rotW;  // Rotation (Quaternion)
 }
 
 /// <summary>
@@ -301,7 +494,8 @@ public class GameData
 public class SaveSlotInfo
 {
     public int slotIndex;
-    public int totalScore;
+    public int totalMoney;
+    public int buildingCount;
     public string saveDateTime;
     public float playTime;
     public bool isEmpty;

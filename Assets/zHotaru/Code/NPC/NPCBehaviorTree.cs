@@ -82,11 +82,28 @@ public class NPCBehaviorTree : MonoBehaviour
     {
         if (displayTransforms != null && displayTransforms.Length > 0)
         {
+            // Lọc chỉ lấy display đã available (preset hoặc đã build)
+            var availableDisplays = new System.Collections.Generic.List<Transform>();
+            foreach (var display in displayTransforms)
+            {
+                var displayArea = display.GetComponent<DisplayArea>();
+                if (displayArea != null && displayArea.IsAvailableForNPC)
+                {
+                    availableDisplays.Add(display);
+                }
+            }
+            
+            if (availableDisplays.Count == 0)
+            {
+                Debug.LogWarning($"[NPC] {npcName}: Không có display nào khả dụng");
+                return;
+            }
+            
             // Thử nhiều display để tìm vị trí hợp lệ
-            int maxAttempts = displayTransforms.Length * 3; // Thử nhiều hơn
+            int maxAttempts = availableDisplays.Count * 3;
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                Transform randomDisplay = displayTransforms[Random.Range(0, displayTransforms.Length)];
+                Transform randomDisplay = availableDisplays[Random.Range(0, availableDisplays.Count)];
                 var displayArea = randomDisplay.GetComponent<DisplayArea>();
                 
                 Vector3 targetPos;
@@ -113,15 +130,17 @@ public class NPCBehaviorTree : MonoBehaviour
                 }
             }
             
-            // Fallback: tìm vị trí gần nhất có thể đến được
+            // Fallback: tìm vị trí gần nhất có thể đến được trong các display available
             Debug.LogWarning($"[NPC] {npcName}: Không tìm được display hợp lệ, thử tìm vị trí gần nhất");
             Vector3 bestTarget = transform.position;
             float bestDist = float.MaxValue;
             
-            foreach (Transform display in displayTransforms)
+            foreach (Transform display in availableDisplays)
             {
                 var area = display.GetComponent<DisplayArea>();
-                Vector3 pos = area != null ? area.GetRandomPosition(transform) : display.position;
+                if (area == null || !area.IsAvailableForNPC) continue;
+                
+                Vector3 pos = area.GetRandomPosition(transform);
                 
                 UnityEngine.AI.NavMeshPath testPath = new UnityEngine.AI.NavMeshPath();
                 if (UnityEngine.AI.NavMesh.CalculatePath(transform.position, pos, UnityEngine.AI.NavMesh.AllAreas, testPath))

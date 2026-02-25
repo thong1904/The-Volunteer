@@ -95,6 +95,16 @@ public class BuildModeObjectSelector : MonoBehaviour
     {
         if (index < 0 || index >= buildableObjects.Count) return;
         
+        // Kiểm tra đủ tiền không (bỏ qua nếu đang move)
+        if (BuildModePlacer.Instance != null && !BuildModePlacer.Instance.IsInMoveMode)
+        {
+            if (!CanAfford(buildableObjects[index]))
+            {
+                Debug.Log($"<color=red>[BuildModeObjectSelector]</color> Không đủ tiền để chọn {buildableObjects[index].objectName}");
+                return;
+            }
+        }
+        
         _selectedIndex = index;
         _selectedObject = buildableObjects[index];
         
@@ -122,6 +132,16 @@ public class BuildModeObjectSelector : MonoBehaviour
         }
         else
         {
+            // Kiểm tra đủ tiền không (bỏ qua nếu đang move)
+            if (BuildModePlacer.Instance != null && !BuildModePlacer.Instance.IsInMoveMode)
+            {
+                if (!CanAfford(buildable))
+                {
+                    Debug.Log($"<color=red>[BuildModeObjectSelector]</color> Không đủ tiền để chọn {buildable.objectName}");
+                    return;
+                }
+            }
+            
             // Object không có trong list, vẫn cho chọn
             _selectedIndex = -1;
             _selectedObject = buildable;
@@ -195,7 +215,17 @@ public class BuildModeObjectSelector : MonoBehaviour
     {
         buildableObjects.Remove(obj);
     }
-
+    
+    /// <summary>
+    /// Kiểm tra có đủ tiền để mua object không
+    /// </summary>
+    public bool CanAfford(BuildableObject obj)
+    {
+        if (obj == null) return false;
+        if (MoneyManager.Instance == null) return true; // Nếu không có MoneyManager thì cho phép
+        
+        return MoneyManager.Instance.GetTotalMoney() >= obj.price;
+    }
     /// <summary>
     /// Lấy objects theo category
     /// </summary>

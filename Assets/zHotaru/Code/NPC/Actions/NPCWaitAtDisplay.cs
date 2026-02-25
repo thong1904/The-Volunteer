@@ -22,8 +22,9 @@ public class NPCWaitAtDisplay : Action
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private float faceRotationSpeed = 8f;
     [SerializeField] private float timeLimitSeconds = 15f;
-    [SerializeField] private int correctAnswerPoints = 10;
-    [SerializeField] private int wrongAnswerPoints = -5;
+    [SerializeField] private int correctAnswerMoney = 10;
+    [UnityEngine.Tooltip("Không trừ tiền khi trả lời sai")]
+    [SerializeField] private int wrongAnswerMoney = 0;
     
     // State
     private bool hasCheckedQuestion = false;
@@ -225,21 +226,25 @@ public class NPCWaitAtDisplay : Action
                 npcBehavior.PlayWrongAnswerSound();
         }
         
-        // Tính điểm
-        int points = isCorrect ? correctAnswerPoints : wrongAnswerPoints;
+        // Tính tiền thưởng - chỉ cộng khi đúng, không trừ khi sai
+        int moneyReward = isCorrect ? correctAnswerMoney : wrongAnswerMoney;
         
-        // Thêm tracking thống kê
-        if (ScoreManager.Instance != null)
+        // Thêm tracking thống kê và cộng tiền
+        if (MoneyManager.Instance != null)
         {
             if (isCorrect)
-                ScoreManager.Instance.RecordCorrectAnswer();
+            {
+                MoneyManager.Instance.RecordCorrectAnswer();
+                MoneyManager.Instance.AddMoney(moneyReward);
+            }
             else
-                ScoreManager.Instance.RecordWrongAnswer();
-                
-            ScoreManager.Instance.AddScore(points);
+            {
+                MoneyManager.Instance.RecordWrongAnswer();
+                // Không trừ tiền khi trả lời sai
+            }
         }
         
-        Debug.Log($"[NPC] {npcName}: Trả lời {(isCorrect ? "ĐÚNG" : "SAI")}, điểm: {points}");
+        Debug.Log($"[NPC] {npcName}: Trả lời {(isCorrect ? "ĐÚNG" : "SAI")}, tiền: {(isCorrect ? "+" : "")}{moneyReward}");
     }
     
     public override void OnEnd()

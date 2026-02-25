@@ -54,7 +54,7 @@ public class ShopUpgradeButton : MonoBehaviour
 
     public void OnClick()
     {
-        if (PlayerMoney.Instance.money < currentPrice)
+        if (MoneyManager.Instance == null || MoneyManager.Instance.GetTotalMoney() < currentPrice)
         {
             Debug.Log("Not enough money");
             return;
@@ -78,7 +78,7 @@ public class ShopUpgradeButton : MonoBehaviour
 
         if (!success) return;
 
-        PlayerMoney.Instance.AddMoney(-currentPrice);
+        MoneyManager.Instance.SpendMoney(currentPrice);
 
         UpdatePrice();
         UpdateUI();

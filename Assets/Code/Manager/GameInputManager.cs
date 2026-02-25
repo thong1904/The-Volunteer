@@ -65,13 +65,33 @@ public class GameInputManager : MonoBehaviour
         jump.performed += _ => jumpThisFrame = true;
         crouch.performed += _ => crouchThisFrame = true;
 
-        // 🔑 P mở / đóng menu ở CẢ 2 map
-        menuPlayer.performed += _ => OnMenuPressed();
-        menuUI.performed += _ => OnMenuPressed();
-        InventoryPlayer.performed += _ => OnMenuPressed();
-        InventoryUI.performed += _ => OnMenuPressed();
-        scene.performed += _ => SceneManager.LoadScene("map");
-        interact.performed += _ => InteractThisFrame = true;
+        // 🔑 P mở / đóng menu ở CẢ 2 map (với null check)
+        if (menuPlayer != null)
+            menuPlayer.performed += _ => OnMenuPressed();
+        else
+            Debug.LogWarning("[GameInputManager] Action 'Menu' không tìm thấy trong Player map!");
+            
+        if (menuUI != null)
+            menuUI.performed += _ => OnMenuPressed();
+        else
+            Debug.LogWarning("[GameInputManager] Action 'Menu' không tìm thấy trong UI map!");
+            
+        if (InventoryPlayer != null)
+            InventoryPlayer.performed += _ => OnMenuPressed();
+        else
+            Debug.LogWarning("[GameInputManager] Action 'Inventory' không tìm thấy trong Player map!");
+            
+        if (InventoryUI != null)
+            InventoryUI.performed += _ => OnMenuPressed();
+        else
+            Debug.LogWarning("[GameInputManager] Action 'Inventory' không tìm thấy trong UI map!");
+            
+        if (scene != null)
+            scene.performed += _ => SceneManager.LoadScene("map");
+            
+        if (interact != null)
+            interact.performed += _ => InteractThisFrame = true;
+            
         playerMap.Enable();
     }
 

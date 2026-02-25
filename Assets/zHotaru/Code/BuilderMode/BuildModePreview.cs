@@ -271,10 +271,87 @@ public class BuildModePreview : MonoBehaviour
                     _currentFootprint, 
                     _currentRotationY
                 );
+                
+                // Kiểm tra chồng lấn với objects đã đặt
+                if (_isPlacementValid && IsOverlappingPlacedObjects(position))
+                {
+                    _isPlacementValid = false;
+                }
             }
         }
         
         UpdatePreviewColor();
+    }
+    
+    /// <summary>
+    /// Kiểm tra xem vị trí có chồng lấn với objects đã đặt không
+    /// </summary>
+    private bool IsOverlappingPlacedObjects(Vector3 position)
+    {
+        if (BuildModePlacer.Instance == null) return false;
+        
+        // Lấy bounds của preview
+        Bounds previewBounds = GetPreviewBounds();
+        if (previewBounds.size == Vector3.zero) return false;
+        
+        // Kiểm tra với tất cả objects đã đặt
+        foreach (var placedData in BuildModePlacer.Instance.PlacedObjects)
+        {
+            if (placedData.gameObject == null) continue;
+            
+            // Nếu object đang hidden (đang move) thì bỏ qua
+            if (!placedData.gameObject.activeInHierarchy) continue;
+            
+            Bounds placedBounds = GetObjectBounds(placedData.gameObject);
+            if (placedBounds.size == Vector3.zero) continue;
+            
+            // Kiểm tra overlap
+            if (previewBounds.Intersects(placedBounds))
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// Lấy bounds của preview object hiện tại
+    /// </summary>
+    private Bounds GetPreviewBounds()
+    {
+        if (_currentPreview == null) return new Bounds();
+        
+        Renderer[] renderers = _currentPreview.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return new Bounds();
+        
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+        
+        // Thu nhỏ bounds một chút để tránh false positive khi đặt cạnh nhau
+        bounds.size *= 0.9f;
+        
+        return bounds;
+    }
+    
+    /// <summary>
+    /// Lấy bounds của một GameObject
+    /// </summary>
+    private Bounds GetObjectBounds(GameObject obj)
+    {
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return new Bounds();
+        
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+        
+        return bounds;
     }
 
     /// <summary>

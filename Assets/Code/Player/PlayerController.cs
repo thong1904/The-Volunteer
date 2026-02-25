@@ -30,8 +30,6 @@ public class PlayerController : MonoBehaviour
     [Header("Crouch")]
     public float standHeight = 1.8f;
     public float crouchHeight = 1.0f;
-    bool canLook = true;
-    bool canMove = true;
 
     CharacterController controller;
     TrashPickup currentTrash;
@@ -226,6 +224,32 @@ public class PlayerController : MonoBehaviour
                 PickupPromptUI.Instance.Show("E to open shop");
                 return;
             }
+            
+            // ===== DAY START =====
+            DayStartInteractable dayStart = hit.collider.GetComponentInParent<DayStartInteractable>();
+            if (dayStart != null && dayStart.CanInteract())
+            {
+                ClearInteractState();
+
+                currentInteract = dayStart;
+
+                dayStart.ShowOutline();
+                PickupPromptUI.Instance.Show(dayStart.GetPromptMessage());
+                return;
+            }
+            
+            // ===== NPC INTERACTION =====
+            NPCInteractable npcInteract = hit.collider.GetComponentInParent<NPCInteractable>();
+            if (npcInteract != null && npcInteract.CanInteract)
+            {
+                ClearInteractState();
+
+                currentInteract = npcInteract;
+
+                npcInteract.ShowOutline();
+                PickupPromptUI.Instance.Show(npcInteract.GetPromptMessage());
+                return;
+            }
         }
 
         ClearInteractState();
@@ -243,6 +267,12 @@ public class PlayerController : MonoBehaviour
 
         if (currentInteract is ShopInteract shop)
             shop.HideOutline();
+            
+        if (currentInteract is DayStartInteractable dayStart)
+            dayStart.HideOutline();
+            
+        if (currentInteract is NPCInteractable npcInteract)
+            npcInteract.HideOutline();
 
         currentTrash = null;
         currentBin = null;

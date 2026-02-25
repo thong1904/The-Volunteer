@@ -30,8 +30,9 @@ public class TrashBin : MonoBehaviour, IInteractable
     public void Interact()
     {
         int money = InventoryManager.Instance.SellAllTrash();
-         Debug.Log("Sold trash for: " + money);
-        PlayerMoney.Instance.AddMoney(money);
-       
+        Debug.Log("Sold trash for: " + money);
+        
+        if (MoneyManager.Instance != null)
+            MoneyManager.Instance.AddMoney(money);
     }
 }

@@ -166,6 +166,7 @@ GameObject:
   - component: {fileID: 1925142123935395027}
   - component: {fileID: 5938919734730600558}
   - component: {fileID: 6048017255800445180}
+  - component: {fileID: 1368431788053146624}
   m_Layer: 0
   m_Name: layer 1
   m_TagString: Untagged
@@ -241,6 +242,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &1368431788053146624
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5086946817817343278}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -7102350196987980496, guid: 17562d026c816f747972c71c281859e9, type: 3}
 --- !u!1 &8631205937240098118
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,6 +275,7 @@ GameObject:
   - component: {fileID: 5027887459368565181}
   - component: {fileID: 6094251389962884344}
   - component: {fileID: 5059021782145091819}
+  - component: {fileID: 8452724294592287494}
   m_Layer: 0
   m_Name: layer 5
   m_TagString: Untagged
@@ -327,3 +351,25 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &8452724294592287494
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8631205937240098118}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 3532244630321482697, guid: 17562d026c816f747972c71c281859e9, type: 3}

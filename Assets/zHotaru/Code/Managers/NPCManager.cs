@@ -22,14 +22,17 @@ public class NPCManager : MonoBehaviour
     private Transform[] cachedDisplays;
 
     [Header("Spawn Settings")]
-    [SerializeField] private float customerSpawnInterval = 10f;
+    [SerializeField] private float baseCustomerSpawnInterval = 10f;  // Interval ban đầu
+    [SerializeField] private float spawnIntervalIncrease = 1f;       // Tăng thêm mỗi lần spawn
     [SerializeField] private float supportSpawnInterval = 15f;
     [SerializeField] private int initialMaxCustomers = 5;
     [SerializeField] private int initialMaxSupport = 0;
     [SerializeField] private bool enableSupportSpawn = false;
     
     [Header("Day End Settings")]
-    [SerializeField] private int totalNPCsPerDay = 10; // Tổng số NPC sẽ spawn trong ngày
+    [SerializeField] private int totalNPCsPerDay = 20; // Tối đa 20 NPC mỗi ngày
+    
+    private float currentCustomerSpawnInterval;  // Interval hiện tại (tăng dần)
     
     private readonly Dictionary<GameObject, Queue<GameObject>> pool = new Dictionary<GameObject, Queue<GameObject>>();
     private readonly List<GameObject> activeCustomers = new List<GameObject>();
@@ -61,17 +64,33 @@ public class NPCManager : MonoBehaviour
     {
         currentMaxCustomers = initialMaxCustomers;
         currentMaxSupport = initialMaxSupport;
+        currentCustomerSpawnInterval = baseCustomerSpawnInterval;
         
         if (autoFindDisplays)
         {
-            DisplayArea[] displays = FindObjectsByType<DisplayArea>(FindObjectsSortMode.None);
-            cachedDisplays = new Transform[displays.Length];
-            for (int i = 0; i < displays.Length; i++)
-            {
-                cachedDisplays[i] = displays[i].transform;
-            }
-            Debug.Log($"[NPCManager] Found {cachedDisplays.Length} display areas");
+            RefreshDisplayCache();
         }
+    }
+    
+    /// <summary>
+    /// Cập nhật lại danh sách display có sẵn cho NPC
+    /// Gọi khi có display mới được đặt hoặc xóa
+    /// </summary>
+    public void RefreshDisplayCache()
+    {
+        DisplayArea[] allDisplays = FindObjectsByType<DisplayArea>(FindObjectsSortMode.None);
+        var availableList = new System.Collections.Generic.List<Transform>();
+        
+        foreach (var display in allDisplays)
+        {
+            if (display.IsAvailableForNPC)
+            {
+                availableList.Add(display.transform);
+            }
+        }
+        
+        cachedDisplays = availableList.ToArray();
+        Debug.Log($"[NPCManager] Found {cachedDisplays.Length} available display areas");
     }
 
     void Update()
@@ -83,7 +102,9 @@ public class NPCManager : MonoBehaviour
             spawnedNPCCount < totalNPCsPerDay)
         {
             SpawnCustomer();
-            nextCustomerSpawnTime = Time.time + customerSpawnInterval;
+            nextCustomerSpawnTime = Time.time + currentCustomerSpawnInterval;
+            // Tăng interval cho lần spawn tiếp theo
+            currentCustomerSpawnInterval += spawnIntervalIncrease;
         }
 
         if (enableSupportSpawn && spawnSupport && Time.time >= nextSupportSpawnTime && activeSupport.Count < currentMaxSupport)
@@ -110,7 +131,7 @@ public class NPCManager : MonoBehaviour
     public void StartCustomerSpawning()
     {
         spawnCustomers = true;
-        nextCustomerSpawnTime = Time.time + customerSpawnInterval;
+        nextCustomerSpawnTime = Time.time + currentCustomerSpawnInterval;
     }
 
     public void StopCustomerSpawning() => spawnCustomers = false;
@@ -217,24 +238,13 @@ public class NPCManager : MonoBehaviour
                 OnNPCCountChanged?.Invoke(spawnedNPCCount, despawnedNPCCount);
                 Debug.Log($"[NPCManager] NPC rời đi ({despawnedNPCCount}/{spawnedNPCCount} đã spawn)");
                 
-                // Kiểm tra điều kiện kết thúc ngày:
-                // - Đã spawn đủ số NPC trong ngày
-                // - Tất cả NPC đã rời đi (không còn active)
-                CheckDayEnd();
+                // Kiểm tra xem tất cả NPC đã rời đi chưa
+                if (activeCustomers.Count == 0)
+                {
+                    Debug.Log($"[NPCManager] ✅ Tất cả NPC đã rời đi!");
+                    OnAllNPCsLeft?.Invoke();
+                }
             }
-        }
-    }
-    
-    /// <summary>
-    /// Kiểm tra xem có nên kết thúc ngày không
-    /// </summary>
-    private void CheckDayEnd()
-    {
-        // Điều kiện kết thúc: spawn đủ số lượng VÀ tất cả đã rời đi
-        if (spawnedNPCCount >= totalNPCsPerDay && activeCustomers.Count == 0)
-        {
-            Debug.Log($"[NPCManager] ✅ Tất cả {totalNPCsPerDay} NPC đã rời đi!");
-            OnAllNPCsLeft?.Invoke();
         }
     }
     
@@ -262,14 +272,50 @@ public class NPCManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Bắt tất cả NPC đang trong bảo tàng rời đi (khi kết thúc ngày)
+    /// </summary>
+    public void ForceAllNPCsToLeave()
+    {
+        StopCustomerSpawning();
+        StopSupportSpawning();
+        
+        int count = 0;
+        foreach (var npc in activeCustomers)
+        {
+            if (npc == null) continue;
+            
+            var behavior = npc.GetComponent<NPCBehaviorTree>();
+            if (behavior != null)
+            {
+                behavior.SetExiting();
+                count++;
+            }
+        }
+        
+        foreach (var npc in activeSupport)
+        {
+            if (npc == null) continue;
+            
+            var behavior = npc.GetComponent<NPCBehaviorTree>();
+            if (behavior != null)
+            {
+                behavior.SetExiting();
+            }
+        }
+        
+        Debug.Log($"[NPCManager] 🚪 Bắt {count} NPC rời khỏi bảo tàng");
+    }
+    
+    /// <summary>
     /// Reset counters cho ngày mới (được gọi từ GameManager.StartNewDay)
     /// </summary>
     public void ResetDayCounters()
     {
         spawnedNPCCount = 0;
         despawnedNPCCount = 0;
+        currentCustomerSpawnInterval = baseCustomerSpawnInterval;  // Reset interval về ban đầu
         OnNPCCountChanged?.Invoke(spawnedNPCCount, despawnedNPCCount);
-        Debug.Log("[NPCManager] Reset counters cho ngày mới");
+        Debug.Log($"[NPCManager] Reset counters cho ngày mới (interval: {currentCustomerSpawnInterval}s)");
     }
 
     public void UpgradeMaxCustomers(int newLimit)

@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8aa79291fa78c1149a418f1336c1e225, type: 3}
   m_Name: Ammo
   m_EditorClassIdentifier: 
-  objectName: "\u0110\u1EA1n"
+  objectId: DI1
+  objectName: "H\u1ED9p \u0111\u1EA1n"
   description: AMMOO
   icon: {fileID: 0}
+  price: 100
   prefab: {fileID: 316815087480787391, guid: 4b2fec33359faa347adefccd828ff714, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}
   alignToGround: 1
   gridFootprint: {x: 1, y: 1}
-  category: Default
+  category: 0

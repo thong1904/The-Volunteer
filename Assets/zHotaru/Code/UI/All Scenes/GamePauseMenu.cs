@@ -47,6 +47,12 @@ public class GamePauseMenu : MonoBehaviour
 
     private void HandleEscapePress()
     {
+        // Nếu Shop đang mở -> ShopInteract tự xử lý ESC, không làm gì ở đây
+        if (ShopInteract.IsShopOpen)
+        {
+            return;
+        }
+        
         // Nếu Settings đang mở -> đóng Settings
         if (isSettingsOpen)
         {
