@@ -16,6 +16,12 @@ public class CheckTimeToLeaveMuseum : Conditional
     
     public override TaskStatus OnUpdate()
     {
+        // Nếu ngày kết thúc → cũng return Success để NPC rời đi
+        if (npcBehavior.IsDayEnded())
+        {
+            return TaskStatus.Success;
+        }
+        
         if (npcBehavior.IsTimeToLeaveMuseum())
         {
             return TaskStatus.Success;

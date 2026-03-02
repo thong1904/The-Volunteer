@@ -16,6 +16,12 @@ public class CheckLittering : Conditional
     
     public override TaskStatus OnUpdate()
     {
+        // Ngày kết thúc → không vứt rác
+        if (npcBehavior.IsDayEnded())
+        {
+            return TaskStatus.Failure;
+        }
+        
         if (npcBehavior.ShouldLitter())
         {
             return TaskStatus.Success;

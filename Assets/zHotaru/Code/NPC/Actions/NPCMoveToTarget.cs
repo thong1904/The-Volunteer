@@ -14,33 +14,52 @@ public class NPCMoveToTargetNavMesh : Action
     
     [SerializeField] private float stoppingDistance = 0.5f;
     [SerializeField] private string walkAnimationName = "Walk";
+    [SerializeField] private float stuckCheckTime = 2f; // Thời gian kiểm tra bị kẹt
+    [SerializeField] private float minMoveDistance = 0.1f; // Khoảng cách tối thiểu phải di chuyển
+    [SerializeField] private int maxPathRetries = 3; // THÊM DÒNG NÀY
+    
+    private float stuckTimer = 0f;
+    private Vector3 lastPosition;
+    private bool pathValid = false;
+    private int pathRetryCount = 0; // THÊM DÒNG NÀY
     
     public override void OnAwake()
     {
         npcBehavior = GetComponent<NPCBehaviorTree>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         
-        if (navMeshAgent == null)
+        if (navMeshAgent != null)
         {
-            Debug.LogError($"{gameObject.name} không có NavMeshAgent! Thêm Component NavMeshAgent.");
-        }
-        else
-        {
-            // Tối ưu NavMeshAgent để NPC có thể xuyên qua nhau khi cần
-            navMeshAgent.avoidancePriority = Random.Range(0, 32); // Ưu tiên ngẫu nhiên để tránh deadlock
+            navMeshAgent.avoidancePriority = Random.Range(0, 32);
         }
     }
     
     public override void OnStart()
     {
-        // Kích hoạt NavMeshAgent
+        // Reset stuck detection
+        stuckTimer = 0f;
+        lastPosition = transform.position;
+        pathValid = false;
+        pathRetryCount = 0;
+        
+        // Kích hoạt và cấu hình NavMeshAgent
         if (navMeshAgent != null)
         {
             navMeshAgent.enabled = true;
+            navMeshAgent.isStopped = false;
+            navMeshAgent.updateRotation = true; // Đảm bảo NPC xoay theo hướng di chuyển
+            navMeshAgent.updatePosition = true;
+            
+            // Đảm bảo NPC ở trên NavMesh
+            if (!navMeshAgent.isOnNavMesh)
+            {
+                TryWarpToNavMesh();
+            }
         }
         
         // Phát animation walk
-        npcBehavior.PlayAnimation(walkAnimationName);
+        if (npcBehavior != null)
+            npcBehavior.PlayAnimation(walkAnimationName);
     }
     
     public override TaskStatus OnUpdate()
@@ -48,44 +67,131 @@ public class NPCMoveToTargetNavMesh : Action
         if (npcBehavior == null || navMeshAgent == null)
             return TaskStatus.Failure;
         
+        // Ngày kết thúc → dừng ngay
+        if (npcBehavior.IsDayEnded())
+        {
+            if (navMeshAgent.isActiveAndEnabled)
+            {
+                navMeshAgent.velocity = Vector3.zero;
+                navMeshAgent.ResetPath();
+            }
+            return TaskStatus.Failure;
+        }
+        
         if (!navMeshAgent.isOnNavMesh)
         {
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(transform.position, out hit, 3f, NavMesh.AllAreas))
-            {
-                navMeshAgent.Warp(hit.position);
-            }
-            else
-            {
-                Debug.LogWarning($"{gameObject.name} không nằm trên NavMesh!");
+            if (!TryWarpToNavMesh())
                 return TaskStatus.Failure;
-            }
         }
         
         targetPosition = npcBehavior.CurrentTarget;
         
-        // Đặt đích cho NavMeshAgent
-        if (navMeshAgent.isActiveAndEnabled)
+        if (Vector3.Distance(transform.position, targetPosition) < stoppingDistance)
         {
-            navMeshAgent.SetDestination(targetPosition);
+            navMeshAgent.velocity = Vector3.zero;
+            navMeshAgent.ResetPath();
+            return TaskStatus.Success;
         }
         
-        // Kiểm tra xem đã đến đích hay chưa
-        if (!navMeshAgent.pathPending)
+        // Kiểm tra và set destination
+        if (navMeshAgent.isActiveAndEnabled)
         {
-            float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
-            
-            // Nếu đã đến đích
-            if (distanceToTarget < stoppingDistance)
+            if (!pathValid)
             {
-                navMeshAgent.velocity = Vector3.zero;
-                navMeshAgent.ResetPath();
-                return TaskStatus.Success;
+                NavMeshPath path = new NavMeshPath();
+                
+                // Sample target position lên NavMesh trước
+                NavMeshHit targetHit;
+                Vector3 validTarget = targetPosition;
+                if (NavMesh.SamplePosition(targetPosition, out targetHit, 2f, NavMesh.AllAreas))
+                {
+                    validTarget = targetHit.position;
+                }
+                
+                if (navMeshAgent.CalculatePath(validTarget, path))
+                {
+                    if (path.status == NavMeshPathStatus.PathComplete)
+                    {
+                        navMeshAgent.SetPath(path);
+                        pathValid = true;
+                    }
+                    else if (path.status == NavMeshPathStatus.PathPartial)
+                    {
+                        pathRetryCount++;
+                        if (pathRetryCount >= maxPathRetries)
+                            return TaskStatus.Failure;
+                        npcBehavior.SetTargetDisplayPosition();
+                        return TaskStatus.Running;
+                    }
+                    else
+                    {
+                        pathRetryCount++;
+                        if (pathRetryCount >= maxPathRetries)
+                            return TaskStatus.Failure;
+                        npcBehavior.SetTargetDisplayPosition();
+                        return TaskStatus.Running;
+                    }
+                }
+                else
+                {
+                    pathRetryCount++;
+                    if (pathRetryCount >= maxPathRetries)
+                        return TaskStatus.Failure;
+                    npcBehavior.SetTargetDisplayPosition();
+                    return TaskStatus.Running;
+                }
             }
         }
         
-        // Còn đang di chuyển
+        // Kiểm tra xem đã đến đích hay chưa
+        if (!navMeshAgent.pathPending && pathValid)
+        {
+            if (navMeshAgent.remainingDistance <= stoppingDistance && !navMeshAgent.pathPending)
+            {
+                if (navMeshAgent.velocity.sqrMagnitude < 0.01f)
+                {
+                    navMeshAgent.velocity = Vector3.zero;
+                    navMeshAgent.ResetPath();
+                    return TaskStatus.Success;
+                }
+            }
+            
+            // Kiểm tra bị kẹt
+            stuckTimer += Time.deltaTime;
+            if (stuckTimer >= stuckCheckTime)
+            {
+                float movedDistance = Vector3.Distance(transform.position, lastPosition);
+                if (movedDistance < minMoveDistance)
+                {
+                    pathRetryCount++;
+                    if (pathRetryCount >= maxPathRetries)
+                    {
+                        navMeshAgent.ResetPath();
+                        return TaskStatus.Failure;
+                    }
+                    
+                    navMeshAgent.ResetPath();
+                    pathValid = false;
+                    npcBehavior.SetTargetDisplayPosition();
+                }
+                
+                stuckTimer = 0f;
+                lastPosition = transform.position;
+            }
+        }
+        
         return TaskStatus.Running;
+    }
+    
+    private bool TryWarpToNavMesh()
+    {
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(transform.position, out hit, 3f, NavMesh.AllAreas))
+        {
+            navMeshAgent.Warp(hit.position);
+            return true;
+        }
+        return false;
     }
     
     public override void OnEnd()
@@ -95,6 +201,7 @@ public class NPCMoveToTargetNavMesh : Action
         {
             navMeshAgent.velocity = Vector3.zero;
             navMeshAgent.ResetPath();
+            navMeshAgent.isStopped = true;
         }
     }
 }

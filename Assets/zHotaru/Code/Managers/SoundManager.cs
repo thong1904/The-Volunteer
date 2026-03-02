@@ -39,6 +39,10 @@ public class SoundManager : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float bgmVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 1f;
 
+    [Header("3D Audio Settings")]
+    [SerializeField] private float minDistance3D = 1f;
+    [SerializeField] private float maxDistance3D = 20f;
+
     // Public properties
     public bool IsBGMOn => isBGMOn;
     public bool IsSFXOn => isSFXOn;
@@ -172,6 +176,34 @@ public class SoundManager : MonoBehaviour
     public void PlayFeHuh() => PlaySFX(feHuhSound);
     public void PlayBoost() => PlaySFX(boostSound);
 
+    // ========== 3D AUDIO METHODS (cho NPC) ==========
+
+    /// <summary>
+    /// Phát SFX 3D tại vị trí cụ thể (dùng cho NPC trong game FPS/First Person)
+    /// </summary>
+    public void PlaySFX3D(AudioClip clip, Vector3 position, float volumeScale = 1f)
+    {
+        if (!isSFXOn || clip == null) return;
+        AudioSource.PlayClipAtPoint(clip, position, sfxVolume * volumeScale);
+    }
+
+    /// <summary>
+    /// Phát SFX 3D theo tên tại vị trí cụ thể
+    /// </summary>
+    public void PlaySFX3D(string soundName, Vector3 position, float volumeScale = 1f)
+    {
+        AudioClip clip = GetSFXByName(soundName);
+        PlaySFX3D(clip, position, volumeScale);
+    }
+
+    // Các phương thức 3D cho NPC sounds
+    public void PlayMale3D(Vector3 position) => PlaySFX3D(maleSound, position);
+    public void PlayFemale3D(Vector3 position) => PlaySFX3D(femaleSound, position);
+    public void PlayMaYeah3D(Vector3 position) => PlaySFX3D(maYeahSound, position);
+    public void PlayFeYeah3D(Vector3 position) => PlaySFX3D(feYeahSound, position);
+    public void PlayMaHuh3D(Vector3 position) => PlaySFX3D(maHuhSound, position);
+    public void PlayFeHuh3D(Vector3 position) => PlaySFX3D(feHuhSound, position);
+
     /// <summary>
     /// Phát SFX theo tên (dùng cho UIButtonSound)
     /// </summary>
@@ -296,4 +328,30 @@ public class SoundManager : MonoBehaviour
     }
 
     #endregion
+
+    // Thêm method này nếu cần kiểm soát 3D settings chi tiết
+
+    /// <summary>
+    /// Phát SFX 3D với kiểm soát distance (tùy chỉnh hơn)
+    /// </summary>
+    public void PlaySFX3DAdvanced(AudioClip clip, Vector3 position, float volumeScale = 1f)
+    {
+        if (!isSFXOn || clip == null) return;
+        
+        // Tạo GameObject tạm thời
+        GameObject tempAudio = new GameObject("TempAudio3D");
+        tempAudio.transform.position = position;
+        
+        AudioSource audioSource = tempAudio.AddComponent<AudioSource>();
+        audioSource.clip = clip;
+        audioSource.volume = sfxVolume * volumeScale;
+        audioSource.spatialBlend = 1f; // Full 3D
+        audioSource.minDistance = minDistance3D;
+        audioSource.maxDistance = maxDistance3D;
+        audioSource.rolloffMode = AudioRolloffMode.Linear; // hoặc Logarithmic
+        audioSource.Play();
+        
+        // Tự hủy sau khi phát xong
+        Destroy(tempAudio, clip.length + 0.1f);
+    }
 }

@@ -13,8 +13,11 @@ public class NPCLitteringBehavior : Action
     
     [SerializeField] private List<GameObject> trashPrefabs = new List<GameObject>(); // Danh sách các loại rác
     [SerializeField] private Transform trashSpawnPoint; // Transform ở dưới chân NPC để spawn rác
+    [SerializeField] private Transform trashContainer; // Container để chứa rác (tự tìm nếu không gán)
     [SerializeField] private float spawnHeight = 0.5f; // Độ cao spawn nếu không có trashSpawnPoint
     [SerializeField] private float litterCooldown = 5f; // Cooldown giữa các lần vứt rác (giây)
+    
+    private static Transform cachedTrashContainer; // Cache container để không phải tìm mỗi lần
     
     public override void OnAwake()
     {
@@ -25,29 +28,41 @@ public class NPCLitteringBehavior : Action
         {
             trashSpawnPoint = transform.Find("TrashSpawnPoint");
         }
+        
+        // Tìm hoặc tạo trash container
+        if (trashContainer == null && cachedTrashContainer == null)
+        {
+            GameObject containerObj = GameObject.Find("TrashContainer");
+            if (containerObj == null)
+            {
+                containerObj = new GameObject("TrashContainer");
+            }
+            cachedTrashContainer = containerObj.transform;
+        }
+        
+        if (trashContainer == null)
+        {
+            trashContainer = cachedTrashContainer;
+        }
     }
     
     public override void OnStart()
     {
-        // Kiểm tra cooldown - nếu chưa đủ thời gian thì không vứt rác
-        if (Time.time - lastLitterTime < litterCooldown)
-        {
-            Debug.Log($"{npcBehavior.NPCName} còn trong cooldown vứt rác");
+        // Ngày kết thúc → không vứt rác
+        if (npcBehavior != null && npcBehavior.IsDayEnded())
             return;
-        }
+        
+        // Kiểm tra cooldown
+        if (Time.time - lastLitterTime < litterCooldown)
+            return;
         
         // Dừng di chuyển
         Rigidbody rb = transform.GetComponent<Rigidbody>();
         if (rb != null)
-        {
             rb.linearVelocity = Vector3.zero;
-        }
         
-        // Vứt 1 trash duy nhất
         SpawnTrash();
         lastLitterTime = Time.time;
-        
-        Debug.Log($"{npcBehavior.NPCName} đã vứt rác!");
     }
     
     public override TaskStatus OnUpdate()
@@ -59,10 +74,7 @@ public class NPCLitteringBehavior : Action
     private void SpawnTrash()
     {
         if (trashPrefabs.Count == 0)
-        {
-            Debug.LogWarning("Chưa gán Trash Prefabs!");
             return;
-        }
         
         // Chọn loại rác ngẫu nhiên từ danh sách
         GameObject randomTrashPrefab = trashPrefabs[Random.Range(0, trashPrefabs.Count)];
@@ -79,7 +91,17 @@ public class NPCLitteringBehavior : Action
             spawnPosition = transform.position + Vector3.up * spawnHeight;
         }
         
-        // Tạo rác tại vị trí spawn
+        // Tạo rác tại vị trí spawn, đặt vào container
         GameObject trash = Object.Instantiate(randomTrashPrefab, spawnPosition, Quaternion.identity);
+        
+        // Đặt parent là trash container
+        if (trashContainer != null)
+        {
+            trash.transform.SetParent(trashContainer);
+        }
+        else if (cachedTrashContainer != null)
+        {
+            trash.transform.SetParent(cachedTrashContainer);
+        }
     }
 }

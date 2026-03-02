@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8aa79291fa78c1149a418f1336c1e225, type: 3}
+  m_Name: Tree
+  m_EditorClassIdentifier: 
+  objectId: De5
+  objectName: "C\xE2y"
+  description: "C\xE2y cao \u0111\u1EC3 trang tr\xED vi\u1EC7n b\u1EA3o t\xE0ng"
+  icon: {fileID: 21300000, guid: f3dd9bdb92e532746a50a6b9459b6a56, type: 3}
+  price: 100
+  prefab: {fileID: 2930202259232053923, guid: 49e3412f3d70eed41aee27d6c75b7260, type: 3}
+  placementOffset: {x: 0, y: 0, z: 0}
+  alignToGround: 1
+  gridFootprint: {x: 1, y: 1}
+  category: 2

@@ -1,23 +1,29 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerLook : MonoBehaviour
 {
+    public static PlayerLook Instance { get; private set; }
+    
     public Transform playerBody;
-    public float sensitivity = 1f;
+    public float sensitivity = 0.5f;
+   
+    float xRotation;
+    public bool allowLook = true;
 
-    Vector2 lookInput;
-    float xRotation = 0f;
-
-    public void OnLook(InputAction.CallbackContext ctx)
+    void Awake()
     {
-        lookInput = ctx.ReadValue<Vector2>();
+        Instance = this;
     }
 
     void Update()
     {
-        float mouseX = lookInput.x * sensitivity * 80 * Time.deltaTime;
-        float mouseY = lookInput.y * sensitivity * 80 * Time.deltaTime;
+        if (!allowLook) return;
+
+        Vector2 look = GameInputManager.Instance.Look;
+        if (look == Vector2.zero) return;
+
+        float mouseX = look.x * GameSettingManager.Instance.mouseSensitivity * sensitivity * 80f * Time.deltaTime;
+        float mouseY = look.y * GameSettingManager.Instance.mouseSensitivity * sensitivity * 80f * Time.deltaTime;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -80f, 80f);

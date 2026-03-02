@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8aa79291fa78c1149a418f1336c1e225, type: 3}
+  m_Name: Lamp 1
+  m_EditorClassIdentifier: 
+  objectId: FU4
+  objectName: "\u0110\xE8n 1"
+  description: "\u0110\xE8n c\u1ED9t th\u1EC3 soi s\xE1ng vi\u1EC7n b\u1EA3o t\xE0ng"
+  icon: {fileID: 21300000, guid: be87d740b9613d44ca1aae05e9a4c681, type: 3}
+  price: 100
+  prefab: {fileID: 1960884839390089481, guid: a3da62aece2f4d046ae63dca6eb5d804, type: 3}
+  placementOffset: {x: 0, y: 0, z: 0}
+  alignToGround: 1
+  gridFootprint: {x: 1, y: 1}
+  category: 1

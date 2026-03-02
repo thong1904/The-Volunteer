@@ -861,10 +861,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da83794bd4b8a15439be0b3aa278c121, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  areaRadius: 5.11
+  areaSizeStay: {x: 5, y: 5}
+  areaSizeStop: {x: 2, y: 2}
   navMeshSampleDistance: 15
+  maxRetryAttempts: 1
   focusPoint: {fileID: 0}
-  useColliderBounds: 0
 --- !u!114 &403580142
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -906,6 +907,14 @@ MonoBehaviour:
     - Khong khong Ga
     - Co ga ga ga
     correctAnswerIndex: 3
+    pointsReward: 25
+  - questionText: Cup hoc khong
+    answers:
+    - Khong
+    - Khong khong
+    - Cup de
+    - Luu Thai Hoc
+    correctAnswerIndex: 2
     pointsReward: 25
 --- !u!1 &417609544
 GameObject:
@@ -1580,10 +1589,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da83794bd4b8a15439be0b3aa278c121, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  areaRadius: 3
+  areaSizeStay: {x: 5, y: 5}
+  areaSizeStop: {x: 2, y: 2}
   navMeshSampleDistance: 10
+  maxRetryAttempts: 1
   focusPoint: {fileID: 0}
-  useColliderBounds: 0
 --- !u!114 &598813828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1625,6 +1635,14 @@ MonoBehaviour:
     - Gei la gi
     - Dat dap zai nen ko gay
     correctAnswerIndex: 0
+    pointsReward: 10
+  - questionText: tun HUNG gei ko
+    answers:
+    - Co rat gei
+    - Khong tuan moi gay
+    - Gei la gi
+    - Hung dap zai nen ko gay
+    correctAnswerIndex: 3
     pointsReward: 10
 --- !u!1 &610529698
 GameObject:
@@ -2039,7 +2057,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1493130526}
   m_Father: {fileID: 610529699}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &907859153
@@ -2890,10 +2909,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da83794bd4b8a15439be0b3aa278c121, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  areaRadius: 5.11
+  areaSizeStay: {x: 5, y: 5}
+  areaSizeStop: {x: 2, y: 2}
   navMeshSampleDistance: 15
+  maxRetryAttempts: 1
   focusPoint: {fileID: 0}
-  useColliderBounds: 0
 --- !u!114 &1236650104
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2934,7 +2954,15 @@ MonoBehaviour:
     - Het cuu
     - Cuu chu cho tien momo
     - Ha?
-    correctAnswerIndex: 3
+    correctAnswerIndex: 2
+    pointsReward: 69
+  - questionText: Tuan co ny khong
+    answers:
+    - Khong
+    - Co may em 2k11
+    - Co may em idol
+    - Ha?
+    correctAnswerIndex: 1
     pointsReward: 69
 --- !u!1 &1316394889
 GameObject:
@@ -3075,6 +3103,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1493130526 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+  m_PrefabInstance: {fileID: 1745314552}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1572652811
 GameObject:
   m_ObjectHideFlags: 0
@@ -3155,15 +3188,15 @@ MonoBehaviour:
       variableStartIndex: 
       JSONSerialization: '{"EntryTask":{"Type":"BehaviorDesigner.Runtime.Tasks.EntryTask","NodeData":{"Offset":"(443.5,30)"},"ID":0,"Name":"Entry","Instant":true},"RootTask":{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(3.5,119.999992)"},"ID":1,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(3.49999428,118.297783)"},"ID":2,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckDayEnded","NodeData":{"Offset":"(-161.914871,120)"},"ID":3,"Name":"Check
         Day Ended","Instant":true},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(156.69136,116.382988)"},"ID":4,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"NPCMoveToTargetNavMesh","NodeData":{"Offset":"(-174.8837,130)"},"ID":5,"Name":"Move
-        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"Walk"},{"Type":"SetEnteredMuseum","NodeData":{"Offset":"(0.1616211,134.5794)"},"ID":6,"Name":"Set
+        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"Walk","SinglestuckCheckTime":2,"SingleminMoveDistance":0.1,"Int32maxPathRetries":3},{"Type":"SetEnteredMuseum","NodeData":{"Offset":"(0.1616211,134.5794)"},"ID":6,"Name":"Set
         Entered Museum","Instant":true},{"Type":"BehaviorDesigner.Runtime.Tasks.Repeater","NodeData":{"Offset":"(135.281128,123.865105)"},"ID":7,"Name":"Repeater","Instant":true,"SharedIntcount":{"Type":"BehaviorDesigner.Runtime.SharedInt","Name":null,"Int32mValue":0},"SharedBoolrepeatForever":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true},"SharedBoolendOnFailure":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":true},"Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(-4.28540039,115.238159)"},"ID":8,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-319.069244,129.7959)"},"ID":9,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckTimeToLeaveMuseum","NodeData":{"Offset":"(-100,130)"},"ID":10,"Name":"Check
         Time To Leave","Instant":true},{"Type":"NPCLeaveMuseum","NodeData":{"Offset":"(92.38501,131.750061)"},"ID":11,"Name":"Leave
         Museum","Instant":true,"SinglestoppingDistance":1,"StringwalkAnimationName":"Walk"}]},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-1.90496826,128.095215)"},"ID":12,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckLittering","NodeData":{"Offset":"(-67.71912,128.960312)"},"ID":13,"Name":"Check
         Littering","Instant":true},{"Type":"NPCLitteringBehavior","NodeData":{"Offset":"(71.28088,139.5853)"},"ID":14,"Name":"Littering
         Behavior","Instant":true,"List`1trashPrefabs":[0,1],"TransformtrashSpawnPoint":2,"SinglespawnHeight":0.5,"SinglelitterCooldown":5}]},{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(426.6666,128.095215)"},"ID":15,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"SetTargetDisplay","NodeData":{"Offset":"(-176.8317,134.870972)"},"ID":16,"Name":"Set
         Target Display","Instant":true},{"Type":"NPCMoveToTargetNavMesh","NodeData":{"Offset":"(0,130)"},"ID":17,"Name":"Move
-        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk"},{"Type":"NPCWaitAtDisplay","NodeData":{"Offset":"(171.155182,130.775757)"},"ID":18,"Name":"Wait
-        At Display","Instant":true,"SingleminWaitTime":3,"SinglemaxWaitTime":8,"StringidleAnimationName":"Idle","SinglerotationSpeed":5,"StringplayerTag":"Player","SharedBoolshouldTriggerQuestion":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":false}},{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(302.828125,130.012939)"},"ID":19,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-1.43603516,114.042725)"},"ID":20,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckQuestionEvent","NodeData":{"Offset":"(-99.27673,126.543945)"},"ID":21,"Name":"Check
+        To Target (NavMesh)","Instant":true,"SinglestoppingDistance":0.5,"StringwalkAnimationName":"walk","SinglestuckCheckTime":2,"SingleminMoveDistance":0.1,"Int32maxPathRetries":3},{"Type":"NPCWaitAtDisplay","NodeData":{"Offset":"(171.155182,130.775757)"},"ID":18,"Name":"Wait
+        At Display","Instant":true,"SingleminWaitTime":3,"SinglemaxWaitTime":8,"StringidleAnimationName":"Idle","SinglerotationSpeed":5,"StringplayerTag":"Player","SinglefaceRotationSpeed":8,"SingletimeLimitSeconds":15,"Int32correctAnswerPoints":10,"Int32wrongAnswerPoints":-5},{"Type":"BehaviorDesigner.Runtime.Tasks.Selector","NodeData":{"Offset":"(302.828125,130.012939)"},"ID":19,"Name":"Selector","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"BehaviorDesigner.Runtime.Tasks.Sequence","NodeData":{"Offset":"(-1.43603516,114.042725)"},"ID":20,"Name":"Sequence","Instant":true,"AbortTypeabortType":"None","Children":[{"Type":"CheckQuestionEvent","NodeData":{"Offset":"(-99.27673,126.543945)"},"ID":21,"Name":"Check
         Question Event","Instant":true,"SingletriggerRadius":5,"StringplayerTag":"Player","SinglechancePercent":50,"BooleanrequireIsAtDisplay":true,"SharedBoolisAtDisplay":{"Type":"BehaviorDesigner.Runtime.SharedBool","Name":null,"BooleanmValue":false}},{"Type":"NPCQuestionEvent","NodeData":{"Offset":"(90,130)"},"ID":22,"Name":"Question
         Event","Instant":true,"StringwaveAnimationName":"Wave","QuestionData[]questions":[],"SingletimeLimitSeconds":15,"StringplayerTag":"Player","SinglefaceRotationSpeed":8,"Int32correctAnswerPoints":10,"Int32wrongAnswerPoints":-5}]}]}]}]}]}]}]}]}}'
       fieldSerializationData:
@@ -3572,6 +3605,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SCENE-SPECIFIC
       objectReference: {fileID: 0}
+    - target: {fileID: 2627964760075758708, guid: 09726f2caf6bc794ea9f3f08b43a0964, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2662508483910815077, guid: 09726f2caf6bc794ea9f3f08b43a0964, type: 3}
       propertyPath: sunLight
       value: 
@@ -3637,6 +3674,91 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 09726f2caf6bc794ea9f3f08b43a0964, type: 3}
+--- !u!1001 &1745314552
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 896186390}
+    m_Modifications:
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -3.27
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 528769816699393799, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6932471934901528607, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: litterChance
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 6932471934901528607, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: maxMuseumTime
+      value: 45
+      objectReference: {fileID: 0}
+    - target: {fileID: 6932471934901528607, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: minMuseumTime
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 6932471934901528607, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: questionChancePercent
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 6932471934901528607, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: questionTriggerRadius
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 6932471934901528607, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: museumEntranceTransform
+      value: 
+      objectReference: {fileID: 696175676}
+    - target: {fileID: 8524140497648348938, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_Name
+      value: normal man a
+      objectReference: {fileID: 0}
+    - target: {fileID: 8524140497648348938, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0d332d54847bdf849a6f2ecfc013c80a, type: 3}
 --- !u!1 &1846704539
 GameObject:
   m_ObjectHideFlags: 0

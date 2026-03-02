@@ -17,6 +17,10 @@ public class NPCBehaviorTree : MonoBehaviour
     [SerializeField] private Transform museumEntranceTransform;
     [SerializeField] private Transform[] displayTransforms; // Transform các khu trưng bày
     
+    [Header("Entrance Area (để NPC không bị kẹt khi rời đi)")]
+    [SerializeField] private float entranceAreaWidth = 10f;  // Chiều rộng vùng entrance
+    [SerializeField] private float entranceAreaDepth = 3f;   // Chiều sâu vùng entrance
+    
     // Fallback for old Vector3 system (kept for backward compatibility)
     [SerializeField] private Vector3 museumEntrance;
     [SerializeField] private Vector3[] displayPositions;
@@ -43,9 +47,9 @@ public class NPCBehaviorTree : MonoBehaviour
     private bool isInMuseum = false;
     private bool isDayEnded = false;
     private bool isAtDisplay = false;
+    private bool hasTriggeredExit = false;  // Đảm bảo chỉ reset BT 1 lần
     private float museumExitTime;
     private Animator animator;
-    private Coroutine questionSoundCoroutine;
     
     public string NPCName => npcName;
     public NPCGender Gender => gender;
@@ -70,25 +74,125 @@ public class NPCBehaviorTree : MonoBehaviour
         else
             currentTarget = museumEntrance;
             
-        museumExitTime = Random.Range(minMuseumTime, maxMuseumTime);
+        // Đặt thời gian rời bảo tàng là thời điểm tương lai (Time.time + duration)
+        museumExitTime = Time.time + Random.Range(minMuseumTime, maxMuseumTime);
+        
+        // Subscribe vào event OnSunset để tự động rời bảo tàng khi hết ngày
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.OnSunset += OnSunsetTriggered;
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Unsubscribe event khi NPC bị destroy
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.OnSunset -= OnSunsetTriggered;
+        }
+    }
+    
+    /// <summary>
+    /// Được gọi khi DayNightManager fire event OnSunset
+    /// </summary>
+    private void OnSunsetTriggered()
+    {
+        // Tất cả NPC đều rời đi khi sunset, bất kể đã vào museum hay chưa
+        if (!hasTriggeredExit)
+        {
+            Debug.Log($"[NPC] {npcName}: Sunset triggered - bắt đầu rời bảo tàng");
+            SetExiting();
+        }
     }
 
     void Update()
     {
-        // Kiểm tra nếu ngày kết thúc
-        if (DayNightManager.Instance != null && DayNightManager.Instance.IsNighttime())
-        {
-            isDayEnded = true;
-        }
+        // Bỏ phần check DayNightManager - không cần nữa
+        // NPC sẽ tự rời đi theo behavior tree của mình
     }
     
     public void SetTargetDisplayPosition()
     {
         if (displayTransforms != null && displayTransforms.Length > 0)
         {
-            Transform randomDisplay = displayTransforms[Random.Range(0, displayTransforms.Length)];
-            var displayArea = randomDisplay.GetComponent<DisplayArea>();
-            currentTarget = displayArea != null ? displayArea.GetRandomPosition() : randomDisplay.position;
+            // Lọc chỉ lấy display đã available (preset hoặc đã build)
+            var availableDisplays = new System.Collections.Generic.List<Transform>();
+            foreach (var display in displayTransforms)
+            {
+                var displayArea = display.GetComponent<DisplayArea>();
+                if (displayArea != null && displayArea.IsAvailableForNPC)
+                {
+                    availableDisplays.Add(display);
+                }
+            }
+            
+            if (availableDisplays.Count == 0)
+            {
+                Debug.LogWarning($"[NPC] {npcName}: Không có display nào khả dụng");
+                return;
+            }
+            
+            // Thử nhiều display để tìm vị trí hợp lệ
+            int maxAttempts = availableDisplays.Count * 3;
+            for (int attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                Transform randomDisplay = availableDisplays[Random.Range(0, availableDisplays.Count)];
+                var displayArea = randomDisplay.GetComponent<DisplayArea>();
+                
+                Vector3 targetPos;
+                if (displayArea != null)
+                {
+                    // Truyền transform của NPC để kiểm tra path hợp lệ
+                    targetPos = displayArea.GetRandomPosition(transform);
+                }
+                else
+                {
+                    targetPos = randomDisplay.position;
+                }
+                
+                // Kiểm tra path có hợp lệ không
+                UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+                if (UnityEngine.AI.NavMesh.CalculatePath(transform.position, targetPos, UnityEngine.AI.NavMesh.AllAreas, path))
+                {
+                    if (path.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+                    {
+                        currentTarget = targetPos;
+                        Debug.Log($"[NPC] {npcName}: Chọn display tại {targetPos}");
+                        return;
+                    }
+                }
+            }
+            
+            // Fallback: tìm vị trí gần nhất có thể đến được trong các display available
+            Debug.LogWarning($"[NPC] {npcName}: Không tìm được display hợp lệ, thử tìm vị trí gần nhất");
+            Vector3 bestTarget = transform.position;
+            float bestDist = float.MaxValue;
+            
+            foreach (Transform display in availableDisplays)
+            {
+                var area = display.GetComponent<DisplayArea>();
+                if (area == null || !area.IsAvailableForNPC) continue;
+                
+                Vector3 pos = area.GetRandomPosition(transform);
+                
+                UnityEngine.AI.NavMeshPath testPath = new UnityEngine.AI.NavMeshPath();
+                if (UnityEngine.AI.NavMesh.CalculatePath(transform.position, pos, UnityEngine.AI.NavMesh.AllAreas, testPath))
+                {
+                    if (testPath.status == UnityEngine.AI.NavMeshPathStatus.PathComplete)
+                    {
+                        float dist = Vector3.Distance(transform.position, pos);
+                        if (dist < bestDist)
+                        {
+                            bestDist = dist;
+                            bestTarget = pos;
+                        }
+                    }
+                }
+            }
+            
+            currentTarget = bestTarget;
+            Debug.Log($"[NPC] {npcName}: Fallback - chọn display tại {currentTarget}");
         }
         else if (displayPositions != null && displayPositions.Length > 0)
         {
@@ -104,16 +208,71 @@ public class NPCBehaviorTree : MonoBehaviour
     
     public void SetExiting()
     {
-        isInMuseum = false;
+        // Chỉ thực hiện 1 lần
+        if (hasTriggeredExit) return;
+        hasTriggeredExit = true;
         
-        // Lấy vị trí entrance
-        Vector3 entrancePos = museumEntranceTransform != null 
+        isInMuseum = false;
+        isDayEnded = true;
+        
+        // Lấy vị trí entrance center
+        Vector3 entranceCenter = museumEntranceTransform != null 
             ? museumEntranceTransform.position 
             : museumEntrance;
         
-        // Tính vị trí exit phía ngoài entrance
-        Vector3 exitDirection = (entrancePos - transform.position).normalized;
-        currentTarget = entrancePos + exitDirection * 20f;
+        // Tính vị trí ngẫu nhiên trong vùng entrance để NPC không bị kẹt
+        Vector3 randomOffset = new Vector3(
+            Random.Range(-entranceAreaWidth / 2f, entranceAreaWidth / 2f),
+            0f,
+            Random.Range(-entranceAreaDepth / 2f, entranceAreaDepth / 2f)
+        );
+        
+        // Nếu có transform, dùng local direction
+        Vector3 targetPos;
+        if (museumEntranceTransform != null)
+        {
+            targetPos = entranceCenter 
+                + museumEntranceTransform.right * randomOffset.x 
+                + museumEntranceTransform.forward * randomOffset.z;
+        }
+        else
+        {
+            targetPos = entranceCenter + randomOffset;
+        }
+        
+        // Sample vị trí lên NavMesh
+        UnityEngine.AI.NavMeshHit hit;
+        if (UnityEngine.AI.NavMesh.SamplePosition(targetPos, out hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            currentTarget = hit.position;
+        }
+        else if (UnityEngine.AI.NavMesh.SamplePosition(entranceCenter, out hit, 5f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            // Fallback về center nếu random position không valid
+            currentTarget = hit.position;
+        }
+        else
+        {
+            currentTarget = entranceCenter;
+        }
+        
+        // Restart behavior tree 1 lần duy nhất
+        RestartBehaviorTree();
+    }
+    
+    /// <summary>
+    /// Restart behavior tree để buộc NPC đánh giá lại từ đầu
+    /// </summary>
+    private void RestartBehaviorTree()
+    {
+        if (behaviorTree == null)
+            behaviorTree = GetComponent<BehaviorTree>();
+        
+        if (behaviorTree != null)
+        {
+            behaviorTree.DisableBehavior();
+            behaviorTree.EnableBehavior();
+        }
     }
     
     public void DespawnNPC()
@@ -134,7 +293,9 @@ public class NPCBehaviorTree : MonoBehaviour
     
     public bool ShouldLitter()
     {
-        return isInMuseum && Random.Range(0f, 100f) < litterChance;
+        // Không vứt rác nếu ngày đã kết thúc hoặc không ở trong bảo tàng
+        if (isDayEnded || !isInMuseum) return false;
+        return Random.Range(0f, 100f) < litterChance;
     }
     
     public bool IsTimeToLeaveMuseum()
@@ -144,6 +305,11 @@ public class NPCBehaviorTree : MonoBehaviour
     
     public bool IsDayEnded()
     {
+        // Check khi đến endHour (21h) - NPC sẽ rời đi
+        if (DayNightManager.Instance != null && DayNightManager.Instance.IsNighttime())
+        {
+            return true;
+        }
         return isDayEnded;
     }
     
@@ -175,12 +341,22 @@ public class NPCBehaviorTree : MonoBehaviour
     {
         isInMuseum = false;
         isDayEnded = false;
-        museumExitTime = Random.Range(minMuseumTime, maxMuseumTime);
+        hasTriggeredExit = false;  // Reset flag để NPC có thể exit lại ở ngày mới
+        
+        // Đặt thời gian rời bảo tàng là thời điểm tương lai (Time.time + duration)
+        museumExitTime = Time.time + Random.Range(minMuseumTime, maxMuseumTime);
 
         // Reset target back to entrance so NPC walks in
         currentTarget = museumEntranceTransform != null
             ? museumEntranceTransform.position
             : museumEntrance;
+
+        // Subscribe lại vào event OnSunset (đề phòng trường hợp bị unsubscribe)
+        if (DayNightManager.Instance != null)
+        {
+            DayNightManager.Instance.OnSunset -= OnSunsetTriggered; // Tránh duplicate
+            DayNightManager.Instance.OnSunset += OnSunsetTriggered;
+        }
 
         // Restart Behavior Designer tree cleanly
         if (behaviorTree == null)
@@ -202,72 +378,42 @@ public class NPCBehaviorTree : MonoBehaviour
     #region NPC Sound Methods
 
     /// <summary>
-    /// Bắt đầu phát âm thanh hỏi lặp lại (male/female sound)
-    /// </summary>
-    public void StartQuestionSound()
-    {
-        StopQuestionSound(); // Dừng nếu đang chạy
-        questionSoundCoroutine = StartCoroutine(QuestionSoundLoop());
-    }
-
-    /// <summary>
-    /// Dừng phát âm thanh hỏi
-    /// </summary>
-    public void StopQuestionSound()
-    {
-        if (questionSoundCoroutine != null)
-        {
-            StopCoroutine(questionSoundCoroutine);
-            questionSoundCoroutine = null;
-        }
-    }
-
-    private System.Collections.IEnumerator QuestionSoundLoop()
-    {
-        while (true)
-        {
-            PlayQuestionSound();
-            yield return new WaitForSeconds(2f); // Lặp lại mỗi 2 giây
-        }
-    }
-
-    /// <summary>
-    /// Phát âm thanh hỏi một lần (male/female)
+    /// Phát âm thanh hỏi một lần (male/female) - 3D tại vị trí NPC
     /// </summary>
     public void PlayQuestionSound()
     {
         if (SoundManager.Instance == null) return;
 
         if (gender == NPCGender.Male)
-            SoundManager.Instance.PlayMale();
+            SoundManager.Instance.PlayMale3D(transform.position);
         else
-            SoundManager.Instance.PlayFemale();
+            SoundManager.Instance.PlayFemale3D(transform.position);
     }
 
     /// <summary>
-    /// Phát âm thanh khi trả lời đúng
+    /// Phát âm thanh khi trả lời đúng - 3D tại vị trí NPC
     /// </summary>
     public void PlayCorrectAnswerSound()
     {
         if (SoundManager.Instance == null) return;
 
         if (gender == NPCGender.Male)
-            SoundManager.Instance.PlayMaYeah();
+            SoundManager.Instance.PlayMaYeah3D(transform.position);
         else
-            SoundManager.Instance.PlayFeYeah();
+            SoundManager.Instance.PlayFeYeah3D(transform.position);
     }
 
     /// <summary>
-    /// Phát âm thanh khi trả lời sai
+    /// Phát âm thanh khi trả lời sai - 3D tại vị trí NPC
     /// </summary>
     public void PlayWrongAnswerSound()
     {
         if (SoundManager.Instance == null) return;
 
         if (gender == NPCGender.Male)
-            SoundManager.Instance.PlayMaHuh();
+            SoundManager.Instance.PlayMaHuh3D(transform.position);
         else
-            SoundManager.Instance.PlayFeHuh();
+            SoundManager.Instance.PlayFeHuh3D(transform.position);
     }
 
     #endregion
