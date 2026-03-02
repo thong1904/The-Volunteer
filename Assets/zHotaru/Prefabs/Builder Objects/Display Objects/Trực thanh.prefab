@@ -1940,22 +1940,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "Tr\u1EF1c thanh"
   questions:
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
+  - questionText: "Vi\u1EC7t Nam th\u1ED1ng nh\u1EA5t \u0111\u1EA5t n\u01B0\u1EDBc
+      n\u0103m n\xE0o ? "
+    answers:
+    - 1978
+    - 1976
+    - 1967
+    - 1977
+    correctAnswerIndex: 1
+    pointsReward: 25
+  - questionText: "Hi\u1EBFn ph\xE1p \u0111\u1EA7u ti\xEAn sau th\u1ED1ng nh\u1EA5t
+      ban h\xE0nh n\u0103m n\xE0o ?"
+    answers:
+    - 1999
+    - 1980
+    - 1975
+    - 1972
+    correctAnswerIndex: 1
+    pointsReward: 25
+  - questionText: "C\xF4ng cu\u1ED9c \u0110\u1ED5i m\u1EDBi b\u1EAFt \u0111\u1EA7u
+      n\u0103m n\xE0o ? "
+    answers:
+    - 1998
+    - 1986
+    - 1968
+    - 1999
+    correctAnswerIndex: 1
+    pointsReward: 25
+  - questionText: "\u0110\u1EA1i h\u1ED9i n\xE0o \u0111\u1EC1 ra \u0111\u01B0\u1EDDng
+      l\u1ED1i \u0110\u1ED5i m\u1EDBi ?"
+    answers:
+    - "\u0110\u1EA1i h\u1ED9i IV"
+    - "\u0110\u1EA1i h\u1ED9i VII"
+    - "\u0110\u1EA1i h\u1ED9i V"
+    - "\u0110\u1EA1i h\u1ED9i VI"
+    correctAnswerIndex: 3
+    pointsReward: 50
 --- !u!4 &7572695237673903749 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7572481489125072671, guid: 8e1d189bc17609247a3f7ced180736bc, type: 3}

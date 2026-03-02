@@ -70,22 +70,50 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Rocket
   questions:
-  - questionText: 
-    answers: []
+  - questionText: "M\u1EF9 thay Ph\xE1p \u1EDF mi\u1EC1n Nam n\u0103m n\xE0o ?"
+    answers:
+    - 1964
+    - 1945
+    - 1954
+    - 1946
+    correctAnswerIndex: 2
+    pointsReward: 25
+  - questionText: "M\u1EB7t tr\u1EADn D\xE2n t\u1ED9c Gi\u1EA3i ph\xF3ng mi\u1EC1n
+      Nam th\xE0nh l\u1EADp n\u0103m n\xE0o ?"
+    answers:
+    - 1961
+    - 1960
+    - 1962
+    - 1963
+    correctAnswerIndex: 1
+    pointsReward: 25
+  - questionText: "Chi\u1EBFn l\u01B0\u1EE3c \u201CChi\u1EBFn tranh \u0111\u1EB7c
+      bi\u1EC7t\u201D di\u1EC5n ra khi n\xE0o ?"
+    answers:
+    - "1945\u20131965"
+    - "1961\u20131966"
+    - "1962\u20131965"
+    - "1961\u20131965"
+    correctAnswerIndex: 3
+    pointsReward: 30
+  - questionText: "Chi\u1EBFn l\u01B0\u1EE3c \u201CChi\u1EBFn tranh c\u1EE5c b\u1ED9\u201D
+      di\u1EC5n ra khi n\xE0o ? "
+    answers:
+    - "1966\u20131968"
+    - "1965\u20131968"
+    - "1964\u20131968"
+    - "1965\u20131967"
+    correctAnswerIndex: 2
+    pointsReward: 30
+  - questionText: "Cu\u1ED9c T\u1ED5ng ti\u1EBFn c\xF4ng T\u1EBFt M\u1EADu Th\xE2n
+      di\u1EC5n ra n\u0103m n\xE0o ?"
+    answers:
+    - 1968
+    - 1986
+    - 1988
+    - 1989
     correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
+    pointsReward: 25
 --- !u!1 &2545700750257936531
 GameObject:
   m_ObjectHideFlags: 0

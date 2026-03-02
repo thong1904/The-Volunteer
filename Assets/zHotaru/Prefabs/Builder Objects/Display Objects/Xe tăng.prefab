@@ -4047,21 +4047,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "Xe t\u0103ng"
   questions:
-  - questionText: 
-    answers: []
+  - questionText: "Qu\u1ED1c k\u1EF3 Vi\u1EC7t Nam c\xF3 m\xE0u g\xEC ?"
+    answers:
+    - "\u0110\u1ECF sao v\xE0ng"
+    - "\u0110\u1ECF sao \u0111\u1ECF"
+    - "v\xE0ng sao v\xE0ng"
+    - "v\xE0ng sao \u0111\u1ECF"
     correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
+    pointsReward: 100
+  - questionText: "K\u1EBB th\xF9 ch\xEDnh trong kh\xE1ng chi\u1EBFn ch\u1ED1ng Ph\xE1p
+      ? "
+    answers:
+    - "Ph\xE1p"
+    - "M\u1EF9"
+    - "T\xE2y Ban Nha"
+    - "Nh\u1EADt"
+    correctAnswerIndex: 100
     pointsReward: 0
 --- !u!4 &9054475588370827435 stripped
 Transform:

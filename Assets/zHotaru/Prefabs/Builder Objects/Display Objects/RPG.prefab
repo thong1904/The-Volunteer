@@ -575,22 +575,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: RPG
   questions:
-  - questionText: 
-    answers: []
+  - questionText: "M\u1EF9 r\xFAt qu\xE2n kh\u1ECFi Vi\u1EC7t Nam theo hi\u1EC7p
+      \u0111\u1ECBnh n\xE0o ?"
+    answers:
+    - Paris 1973
+    - "Hi\u1EC7p \u0111\u1ECBnh S\u01A1 b\u1ED9 6/3/1946"
+    - "i\u1EC7p \u0111\u1ECBnh Gen\xE8ve"
+    - "T\u1EA1m \u01B0\u1EDBc Vi\u1EC7t - Ph\xE1p 14/9/1946"
     correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
+    pointsReward: 50
+  - questionText: "Hi\u1EC7p \u0111\u1ECBnh Paris \u0111\u01B0\u1EE3c k\xFD n\u0103m
+      n\xE0o ?"
+    answers:
+    - 1974
+    - 1976
+    - 1973
+    - 1972
+    correctAnswerIndex: 2
+    pointsReward: 25
+  - questionText: "Chi\u1EBFn d\u1ECBch H\u1ED3 Ch\xED Minh di\u1EC5n ra n\u0103m
+      n\xE0o ?"
+    answers:
+    - 1973
+    - 1972
+    - 1974
+    - 1975
+    correctAnswerIndex: 3
+    pointsReward: 25
+  - questionText: "Ng\xE0y mi\u1EC1n Nam gi\u1EA3i ph\xF3ng l\xE0 ng\xE0y n\xE0o
+      ? "
+    answers:
+    - 30/4/1976
+    - 30/4/1975
+    - 30/4/1974
+    - 30/3/1975
+    correctAnswerIndex: 1
+    pointsReward: 25
 --- !u!1 &8490165470672565895
 GameObject:
   m_ObjectHideFlags: 0

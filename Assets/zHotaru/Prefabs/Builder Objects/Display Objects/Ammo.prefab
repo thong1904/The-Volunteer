@@ -2000,22 +2000,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Ammo
   questions:
-  - questionText: 
-    answers: []
+  - questionText: "C\xE1ch m\u1EA1ng Th\xE1ng T\xE1m th\xE0nh c\xF4ng n\u0103m n\xE0o
+      ? "
+    answers:
+    - 1945
+    - 1946
+    - 1954
+    - 1664
     correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
+    pointsReward: 15
+  - questionText: "N\u01B0\u1EDBc Vi\u1EC7t Nam D\xE2n ch\u1EE7 C\u1ED9ng h\xF2a
+      ra \u0111\u1EDDi khi n\xE0o ?"
+    answers:
+    - 1/9/1945
+    - 9/1/1945
+    - 2/9/1945
+    - 9/2/1945
+    correctAnswerIndex: 2
+    pointsReward: 15
+  - questionText: "Ch\u1EE7 t\u1ECBch n\u01B0\u1EDBc \u0111\u1EA7u ti\xEAn c\u1EE7a
+      Vi\u1EC7t Nam l\xE0 ai ?"
+    answers:
+    - "Nguy\u1EC5n Hu\u1EC7"
+    - "Tr\u01B0\u1EDDng Chinh"
+    - "H\u1ED3 Ch\xED Minh"
+    - "Ng\xF4 Quy\u1EC1n"
+    correctAnswerIndex: 2
+    pointsReward: 10
+  - questionText: "To\xE0n qu\u1ED1c kh\xE1ng chi\u1EBFn b\xF9ng n\u1ED5 n\u0103m
+      n\xE0o ?"
+    answers:
+    - 1944
+    - 1946
+    - 1964
+    - 1948
+    correctAnswerIndex: 2
+    pointsReward: 15
+  - questionText: "Chi\u1EBFn th\u1EAFng Vi\u1EC7t B\u1EAFc Thu\u2013\u0110\xF4ng
+      di\u1EC5n ra n\u0103m n\xE0o ?"
+    answers:
+    - 1964
+    - 1946
+    - 1974
+    - 1947
+    correctAnswerIndex: 3
+    pointsReward: 15
 --- !u!114 &5798196655269891963
 MonoBehaviour:
   m_ObjectHideFlags: 0

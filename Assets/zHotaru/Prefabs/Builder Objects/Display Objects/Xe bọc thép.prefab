@@ -1388,22 +1388,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "Xe b\u1ECDc th\xE9p"
   questions:
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
+  - questionText: "Th\xE0nh ph\u1ED1 l\u1EDBn nh\u1EA5t Vi\u1EC7t Nam hi\u1EC7n nay
+      l\xE0 ?"
+    answers:
+    - "\u0110\xE0 N\u1EB5ng"
+    - "H\u1ED3 Ch\xED Minh"
+    - "H\xE0 N\u1ED9i"
+    - "H\u1EA3i Ph\xF2ng"
+    correctAnswerIndex: 1
+    pointsReward: 100
+  - questionText: "Th\xE0nh ph\u1ED1 l\u1EDBn nh\u1EA5t Vi\u1EC7t Nam hi\u1EC7n nay
+      l\xE0 ?"
+    answers:
+    - 1957
+    - 1975
+    - 1974
+    - 1947
+    correctAnswerIndex: 1
+    pointsReward: 30
+  - questionText: "Vi\u1EC7t Nam b\xECnh th\u01B0\u1EDDng h\xF3a quan h\u1EC7 v\u1EDBi
+      M\u1EF9 n\u0103m n\xE0o ?"
+    answers:
+    - 1994
+    - 1995
+    - 1993
+    - 1996
+    correctAnswerIndex: 1
+    pointsReward: 30
+  - questionText: "Vi\u1EC7t Nam gia nh\u1EADp Li\xEAn H\u1EE3p Qu\u1ED1c n\u0103m
+      n\xE0o ? "
+    answers:
+    - 1980
+    - 1979
+    - 1978
+    - 1977
+    correctAnswerIndex: 3
+    pointsReward: 50
 --- !u!1001 &1663062669514990518
 PrefabInstance:
   m_ObjectHideFlags: 0

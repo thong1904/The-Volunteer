@@ -178,22 +178,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "T\xEAn l\u1EEDa"
   questions:
-  - questionText: 
-    answers: []
+  - questionText: "Vi\u1EC7t Nam gia nh\u1EADp ASEAN n\u0103m n\xE0o ?"
+    answers:
+    - 1995
+    - 1994
+    - 1999
+    - 1991
     correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
+    pointsReward: 30
+  - questionText: "Vi\u1EC7t Nam gia nh\u1EADp WTO n\u0103m n\xE0o ?"
+    answers:
+    - 2006
+    - 1999
+    - 1998
+    - 2007
+    correctAnswerIndex: 3
+    pointsReward: 30
+  - questionText: "Ch\u1EE7 t\u1ECBch H\u1ED3 Ch\xED Minh qua \u0111\u1EDDi n\u0103m
+      n\xE0o ? "
+    answers:
+    - 1997
+    - 1996
+    - 1969
+    - 1967
+    correctAnswerIndex: 2
+    pointsReward: 30
+  - questionText: "Th\u1EE7 \u0111\xF4 c\u1EE7a Vi\u1EC7t Nam l\xE0 g\xEC ?"
+    answers:
+    - "H\u1ED3 Ch\xED Minh"
+    - "H\xE0 N\u1ED9i "
+    - "H\u1EA3i Ph\xF2ng "
+    - "\u0110\xE0 N\u1EB5ng"
+    correctAnswerIndex: 1
+    pointsReward: 100
 --- !u!1 &6758229124796516379
 GameObject:
   m_ObjectHideFlags: 0

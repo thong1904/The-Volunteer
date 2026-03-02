@@ -1436,22 +1436,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: "M\xE1y bay"
   questions:
-  - questionText: 
-    answers: []
+  - questionText: "Chi\u1EBFn th\u1EAFng \u0110i\u1EC7n Bi\xEAn Ph\u1EE7 di\u1EC5n
+      ra n\u0103m n\xE0o ?"
+    answers:
+    - 1945
+    - 1954
+    - 1946
+    - 1947
+    correctAnswerIndex: 1
+    pointsReward: 20
+  - questionText: "Hi\u1EC7p \u0111\u1ECBnh Gen\xE8ve \u0111\u01B0\u1EE3c k\xFD khi
+      n\xE0o ?"
+    answers:
+    - 1954
+    - 1945
+    - 1955
+    - 1956
     correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
+    pointsReward: 20
+  - questionText: "K\u1EBFt qu\u1EA3 Hi\u1EC7p \u0111\u1ECBnh Gen\xE8ve l\xE0 g\xEC
+      ?"
+    answers:
+    - "L\u1EADp t\u1EE9c th\u1ED1ng nh\u1EA5t \u0111\u1EA5t n\u01B0\u1EDBc"
+    - "Chia c\u1EAFt \u0111\u1EA5t n\u01B0\u1EDBc t\u1EA1m th\u1EDDi"
+    - "Chia Vi\u1EC7t Nam th\xE0nh hai qu\u1ED1c gia ri\xEAng bi\u1EC7t l\xE2u d\xE0i"
+    - "kh\xF4ng t\u1ED5 ch\u1EE9c t\u1ED5ng tuy\u1EC3n c\u1EED th\u1ED1ng nh\u1EA5t
+      \u0111\u1EA5t n\u01B0\u1EDBc"
+    correctAnswerIndex: 1
+    pointsReward: 50
+  - questionText: "\u0110\u1EA3ng Lao \u0111\u1ED9ng Vi\u1EC7t Nam th\xE0nh l\u1EADp
+      n\u0103m n\xE0o ?"
+    answers:
+    - 1951
+    - 1954
+    - 1952
+    - 1953
     correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
-  - questionText: 
-    answers: []
-    correctAnswerIndex: 0
-    pointsReward: 0
+    pointsReward: 15
+  - questionText: "Ai ch\u1EC9 huy chi\u1EBFn d\u1ECBch \u0110i\u1EC7n Bi\xEAn Ph\u1EE7
+      ? "
+    answers:
+    - "H\u1ED3 Ch\xED Minh"
+    - "Tr\u01B0\u1EDDng Chinh"
+    - "V\xF5 T\u1EA5t Th\xE0nh"
+    - "V\xF5 Nguy\xEAn Gi\xE1p"
+    correctAnswerIndex: 3
+    pointsReward: 25
 --- !u!1001 &916204288391525648
 PrefabInstance:
   m_ObjectHideFlags: 0
