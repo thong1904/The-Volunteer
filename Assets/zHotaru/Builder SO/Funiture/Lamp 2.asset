@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectId: FU5
   objectName: "\u0110\xE8n 2"
-  description: 
+  description: "\u0110\xE8n c\u1ED9t th\u1EC3 soi s\xE1ng vi\u1EC7n b\u1EA3o t\xE0ng"
   icon: {fileID: 0}
-  price: 100
+  price: 50
   prefab: {fileID: 5281862512015842137, guid: 44ce0c5cdc78f1c4097156ca8bcf726d, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}
   alignToGround: 1

@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectId: DI6
   objectName: "Xe b\u1ECDc th\xE9p"
-  description: 
+  description: "Xe b\u1ECDc th\xE9p t\u1EEB kh\xE1ng chi\u1EBFn ch\u1ED1ng Ph\xE1p-M\u1EF9"
   icon: {fileID: 0}
-  price: 100
+  price: 250
   prefab: {fileID: 1823697130026383676, guid: 98fa93efc456ae7409dedd418c3ef320, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}
   alignToGround: 1

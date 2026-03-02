@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectId: FU3
   objectName: "B\xE0n 3"
-  description: 
+  description: "Gh\xEA g\xF5 ng\u1ED3i tho\u1EA3i m\xE1i cho kh\xE1ch du l\u1ECBch"
   icon: {fileID: 0}
   price: 100
   prefab: {fileID: 830028648270532617, guid: de720f9b5fa7b6c418b994618238211b, type: 3}

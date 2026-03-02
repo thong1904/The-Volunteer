@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectId: De3
   objectName: "B\u1EE5i c\xE2y 2"
-  description: 
+  description: "B\u1EE5i c\xE2y xanh trang tr\xED cho b\u1EA3o t\xE0ng \u0111\u1EB9p
+    h\u01A1n"
   icon: {fileID: 0}
-  price: 100
+  price: 50
   prefab: {fileID: 732249093440715558, guid: 1a138cdc6a991ea4b809012615e30e91, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}
   alignToGround: 1

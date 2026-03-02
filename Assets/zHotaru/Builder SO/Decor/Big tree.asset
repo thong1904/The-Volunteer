@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectId: De1
   objectName: "C\xE2y to"
-  description: 
+  description: "C\xE2y to \u0111\u1EC3 trang tr\xED vi\u1EC7n b\u1EA3o t\xE0ng"
   icon: {fileID: 0}
   price: 100
   prefab: {fileID: 3014601549233213873, guid: 9add53764628f6647a628206c5705fd3, type: 3}
