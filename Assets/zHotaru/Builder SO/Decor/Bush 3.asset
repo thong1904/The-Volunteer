@@ -16,7 +16,7 @@ MonoBehaviour:
   objectName: "B\u1EE5i c\xE2y 3"
   description: "B\u1EE5i c\xE2y xanh \u0111\u1EADm cao trang tr\xED cho b\u1EA3o
     t\xE0ng \u0111\u1EB9p h\u01A1n"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: d27fe8e0a23f0244bb7bcdc9ec37bdef, type: 3}
   price: 50
   prefab: {fileID: 1027601724040527232, guid: 34ee777186f056b439e09aa05a321170, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}

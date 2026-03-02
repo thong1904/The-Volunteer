@@ -15,7 +15,7 @@ MonoBehaviour:
   objectId: DI7
   objectName: "Xe t\u0103ng"
   description: "Xe tank t\u1EEB kh\xE1ng chi\u1EBFn ch\u1ED1ng Ph\xE1p-M\u1EF9"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 137710cf0bc0cab4dad07d137d218144, type: 3}
   price: 450
   prefab: {fileID: 4975198229164005975, guid: f746c27f004b0464fa79d045b36290dd, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}

@@ -15,7 +15,7 @@ MonoBehaviour:
   objectId: DI3
   objectName: "S\xFAng ph\xF3ng l\u1EF1u"
   description: "S\xFAng RPG t\u1EEB kh\xE1ng chi\u1EBFn ch\u1ED1ng Ph\xE1p-M\u1EF9"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 1ad05027f4a210e4eb324c13e070050c, type: 3}
   price: 150
   prefab: {fileID: 5220042979757061538, guid: ff6ac4cd048c7af4593ea130487dadc7, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}

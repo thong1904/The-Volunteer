@@ -15,7 +15,7 @@ MonoBehaviour:
   objectId: DI1
   objectName: "H\u1ED9p \u0111\u1EA1n"
   description: "H\u1ED9p \u0111\u1EA1n t\u1EEB kh\xE1ng chi\u1EBFn ch\u1ED1ng Ph\xE1p-M\u1EF9"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 6e00e12ac11a02747947e681c7526069, type: 3}
   price: 100
   prefab: {fileID: 316815087480787391, guid: 4b2fec33359faa347adefccd828ff714, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}

@@ -15,7 +15,7 @@ MonoBehaviour:
   objectId: FU4
   objectName: "\u0110\xE8n 1"
   description: "\u0110\xE8n c\u1ED9t th\u1EC3 soi s\xE1ng vi\u1EC7n b\u1EA3o t\xE0ng"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: be87d740b9613d44ca1aae05e9a4c681, type: 3}
   price: 100
   prefab: {fileID: 1960884839390089481, guid: a3da62aece2f4d046ae63dca6eb5d804, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}

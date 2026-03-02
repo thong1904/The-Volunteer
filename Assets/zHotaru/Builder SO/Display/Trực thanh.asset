@@ -15,7 +15,7 @@ MonoBehaviour:
   objectId: DI4
   objectName: "Tr\u1EF1c thanh"
   description: "Tr\u1EF1c thanh t\u1EEB kh\xE1ng chi\u1EBFn ch\u1ED1ng Ph\xE1p-M\u1EF9"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e6171270b03e4ed4f9ae9143c5ae5fd8, type: 3}
   price: 500
   prefab: {fileID: 1620217491323388458, guid: d87845baeb0e8a348b5c9d4c031a5a75, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}

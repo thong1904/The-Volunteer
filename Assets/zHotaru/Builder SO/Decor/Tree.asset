@@ -15,7 +15,7 @@ MonoBehaviour:
   objectId: De5
   objectName: "C\xE2y"
   description: "C\xE2y cao \u0111\u1EC3 trang tr\xED vi\u1EC7n b\u1EA3o t\xE0ng"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: f3dd9bdb92e532746a50a6b9459b6a56, type: 3}
   price: 100
   prefab: {fileID: 2930202259232053923, guid: 49e3412f3d70eed41aee27d6c75b7260, type: 3}
   placementOffset: {x: 0, y: 0, z: 0}
